@@ -69,6 +69,9 @@ The interface is optimized for fast daily use on desktop and mobile, with a dark
 ### Independent savings ledger
 
 - Record income and expenses without changing battle or reward algorithms.
+- Track the exact current balance of each bank, e-wallet, investment account, or cash holding with custom account images.
+- Compare actual account assets against ledger net cash flow and expose the reconciliation difference.
+- Assign individual ledger entries to the account where money entered or left.
 - Configure recurring monthly income, bills, subscriptions, and transfers.
 - View total net savings and filtered cash-flow summaries.
 - Forecast next-month savings from recurring and recent actual data.

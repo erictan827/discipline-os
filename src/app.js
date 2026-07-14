@@ -45,6 +45,7 @@ const defaultData = {
   sportSkills: [],
   sportTechniqueReviews: [],
   savingsEntries: [],
+  savingsAccounts: [],
   savingsBattleSync: {},
   recurringSavings: [],
   savingsGoal: null,
@@ -176,6 +177,7 @@ let activeSportSkillId = null;
 let pendingDropClaim = null;
 let exerciseLibrary = { items: [], meta: {}, page: 1, cursors: [''], loading: false, query: '', bodyPart: '', equipment: '' };
 let techniqueImageData = [];
+let pendingSavingsAccountImage = '';
 let savingsMode = 'month';
 let sportSessionsPage = 1;
 let secretDropPage = 1;
@@ -204,8 +206,49 @@ function openSavingForm(item = null) {
   document.querySelector('#savingTitleInput').value = item?.title || '';
   document.querySelector('#savingAmountInput').value = item?.amount || '';
   document.querySelector('#savingNoteInput').value = item?.note || '';
+  const accountSelect = document.querySelector('#savingAccountInput');
+  accountSelect.innerHTML = `<option value="">未分配账户</option>${(data.savingsAccounts || []).map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join('')}`;
+  accountSelect.value = item?.accountId || '';
   document.querySelector(`input[name="savingType"][value="${item?.type || 'income'}"]`).checked = true;
   document.querySelector('#savingDialog').showModal();
+}
+
+function openSavingsAccountForm(item = null) {
+  pendingSavingsAccountImage = item?.image || '';
+  document.querySelector('#savingsAccountEditId').value = item?.id || '';
+  document.querySelector('#savingsAccountDialogTitle').textContent = item ? '更新资产账户' : '添加资产账户';
+  document.querySelector('#savingsAccountNameInput').value = item?.name || '';
+  document.querySelector('#savingsAccountTypeInput').value = item?.type || 'bank';
+  document.querySelector('#savingsAccountBalanceInput').value = item?.balance ?? '';
+  document.querySelector('#savingsAccountNoteInput').value = item?.note || '';
+  const preview = document.querySelector('#savingsAccountImagePreview');
+  preview.style.backgroundImage = pendingSavingsAccountImage ? `url('${pendingSavingsAccountImage}')` : '';
+  preview.classList.toggle('has-image', Boolean(pendingSavingsAccountImage));
+  document.querySelector('#savingsAccountDialog').showModal();
+}
+
+function renderSavingsAccounts(ledgerNet) {
+  const accounts = data.savingsAccounts || [];
+  const total = accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  const difference = total - ledgerNet;
+  document.querySelector('#actualAssetTotal').textContent = money(total);
+  document.querySelector('#accountReconcileValue').textContent = `${difference > 0 ? '+' : difference < 0 ? '−' : ''} RM ${money(Math.abs(difference))}`;
+  document.querySelector('#accountReconcileValue').className = Math.abs(difference) < 0.005 ? 'aligned' : 'different';
+  document.querySelector('#accountReconcileCopy').textContent = !accounts.length
+    ? '先加入 RHB、TNG、ASNB 等账户，才能看到真实资产。'
+    : Math.abs(difference) < 0.005
+      ? '✓ 账户实额与账本净现金流完全对齐。'
+      : `账户实额与账本相差 RM ${money(Math.abs(difference))}；可能来自开户前余额、漏记交易或账户间转账。`;
+  const grid = document.querySelector('#savingsAccountGrid');
+  grid.innerHTML = accounts.length ? accounts.map((account) => {
+    const ratio = total > 0 ? Number(account.balance || 0) / total * 100 : 0;
+    const fallback = { bank: 'BANK', ewallet: 'WALLET', investment: 'INVEST', cash: 'CASH', other: 'ASSET' }[account.type] || 'ASSET';
+    return `<article class="savings-account-card">
+      <div class="savings-account-image ${account.image ? 'has-image' : ''}" ${account.image ? `style="background-image:url('${account.image}')"` : ''}><span>${account.image ? '' : fallback}</span></div>
+      <div class="savings-account-main"><span>${escapeHtml(account.typeLabel || fallback)}</span><h4>${escapeHtml(account.name)}</h4><strong>RM ${money(account.balance)}</strong><small>${ratio.toFixed(1)}% 总资产 · 更新 ${formatDateKey(keyOf(new Date(account.updatedAt)))}</small><i><u style="width:${Math.min(100, ratio)}%"></u></i>${account.note ? `<p>${escapeHtml(account.note)}</p>` : ''}</div>
+      <div class="savings-account-actions"><button data-edit-savings-account="${account.id}">修改</button><button data-delete-savings-account="${account.id}">删除</button></div>
+    </article>`;
+  }).join('') : '<div class="saving-empty">还没有资产账户。加入 RHB、TNG、ASNB 或现金，真实总资产才会开始计算。</div>';
 }
 
 function battleSpendSyncItems() {
@@ -332,7 +375,8 @@ function savingsContext(entry = null) {
   const entries = data.savingsEntries || [];
   const income = entries.filter((x) => x.type === 'income').reduce((s, x) => s + x.amount, 0);
   const expense = entries.filter((x) => x.type === 'expense').reduce((s, x) => s + x.amount, 0);
-  return { entry, totals: { income, expense, net: income - expense }, recurring: data.recurringSavings || [], goal: data.savingsGoal, recent: entries.slice(-30), profile: 'Eric 重视自律、成长、运动、长期存款；要直接具体的马来西亚华人中文建议。' };
+  const accounts = data.savingsAccounts || [];
+  return { entry, totals: { income, expense, net: income - expense, actualAssets: accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0) }, accounts, recurring: data.recurringSavings || [], goal: data.savingsGoal, recent: entries.slice(-30), profile: 'Eric 重视自律、成长、运动、长期存款；要直接具体的马来西亚华人中文建议。' };
 }
 
 function showSavingsAI(title, status, content = '') {
@@ -385,6 +429,7 @@ function renderSavings() {
   document.querySelector('#battleSyncBtn').classList.toggle('has-pending', pendingBattleSync > 0);
   const entries = [...(data.savingsEntries || [])].sort((a, b) => b.date.localeCompare(a.date) || new Date(b.createdAt) - new Date(a.createdAt));
   const allNet = entries.reduce((sum, item) => sum + (item.type === 'income' ? item.amount : -item.amount), 0);
+  renderSavingsAccounts(allNet);
   const range = savingsRange();
   const filtered = entries.filter((item) => (!range.start || item.date >= range.start) && (!range.end || item.date <= range.end));
   const income = filtered.filter((item) => item.type === 'income').reduce((sum, item) => sum + item.amount, 0);
@@ -412,7 +457,7 @@ function renderSavings() {
   document.querySelector('#savingsRewardBox').innerHTML = !goal ? '<div class="saving-empty">先设置一个储蓄目标，系统才会生成神秘箱。</div>' : goal.reward ? `<article class="savings-mystery-box opened"><span>已开箱</span><div class="mystery-glyph">${escapeHtml(goal.reward.glyph || '✦')}</div><h4>${escapeHtml(goal.reward.title || 'AI 奖励')}</h4><p>${escapeHtml(goal.reward.reward || '')}</p><small>${escapeHtml(goal.reward.reason || '')}</small></article>` : `<article class="savings-mystery-box ${goalPct >= 100 ? 'unlocked' : ''}"><span>${goalPct >= 100 ? 'UNLOCKED' : 'LOCKED'}</span><div class="mystery-glyph">?</div><h4>${goalPct >= 100 ? '目标达成，等你领取' : '未知奖励'}</h4><p>${goalPct >= 100 ? 'AI 会在开箱这一刻，按你现在的财务状态决定奖励。' : `还差 RM ${money(Math.max(0, goal.amount - allNet))}`}</p><button data-open-savings-reward ${goalPct >= 100 && !goal.loading ? '' : 'disabled'}>${goal.loading ? 'AI 正在决定…' : '领取并开箱'}</button>${goal.error ? `<small>${escapeHtml(goal.error)}</small>` : ''}</article>`;
   const recurring = document.querySelector('#recurringList');
   recurring.innerHTML = (data.recurringSavings || []).length ? data.recurringSavings.map((item) => `<div class="recurring-row"><div><strong>${escapeHtml(item.title)}</strong><small>每月 ${item.day} 号 · ${item.active ? '自动记入' : '已暂停'}</small></div><span class="${item.type}">${item.type === 'income' ? '+' : '−'} RM ${money(item.amount)}</span><div><button data-toggle-recurring="${item.id}">${item.active ? '暂停' : '启用'}</button><button data-edit-recurring="${item.id}">修改</button><button data-delete-recurring="${item.id}">删除</button></div></div>`).join('') : '<div class="saving-empty">还没有固定项目。设置后可自动入账和预测下月存款。</div>';
-  list.innerHTML = filtered.length ? filtered.map((item) => `<div class="saving-row"><span>${formatDateKey(item.date)}</span><div><strong>${escapeHtml(item.title)}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}${item.sourceTransactionId ? '<small class="saving-sync-label">⇄ 来自战绩同步</small>' : ''}${item.aiReview ? `<small class="saving-ai-label">✦ ${escapeHtml(item.aiReview.label || item.aiReview.verdict || 'AI 已分析')}</small>` : ''}</div><span class="saving-type ${item.type}">${item.type === 'income' ? '收入' : '花费'}</span><span class="saving-amount ${item.type}">${item.type === 'income' ? '+' : '−'} RM ${money(item.amount)}</span><div class="saving-actions"><button data-ai-saving="${item.id}">✦ AI</button><button data-edit-saving="${item.id}">修改</button><button data-delete-saving="${item.id}">删除</button></div></div>`).join('') : '<div class="saving-empty">这个范围还没有现金流记录。</div>';
+  list.innerHTML = filtered.length ? filtered.map((item) => { const account = (data.savingsAccounts || []).find((candidate) => candidate.id === item.accountId); return `<div class="saving-row"><span>${formatDateKey(item.date)}</span><div><strong>${escapeHtml(item.title)}</strong>${account ? `<small class="saving-account-label">◎ ${escapeHtml(account.name)}</small>` : ''}${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}${item.sourceTransactionId ? '<small class="saving-sync-label">⇄ 来自战绩同步</small>' : ''}${item.aiReview ? `<small class="saving-ai-label">✦ ${escapeHtml(item.aiReview.label || item.aiReview.verdict || 'AI 已分析')}</small>` : ''}</div><span class="saving-type ${item.type}">${item.type === 'income' ? '收入' : '花费'}</span><span class="saving-amount ${item.type}">${item.type === 'income' ? '+' : '−'} RM ${money(item.amount)}</span><div class="saving-actions"><button data-ai-saving="${item.id}">✦ AI</button><button data-edit-saving="${item.id}">修改</button><button data-delete-saving="${item.id}">删除</button></div></div>`; }).join('') : '<div class="saving-empty">这个范围还没有现金流记录。</div>';
 }
 let activeAIHabitId = null;
 let managerState = { section: 'records', page: 1 };
@@ -615,6 +660,7 @@ function normalizeData(raw = {}) {
     sportSkills: Array.isArray(raw.sportSkills) ? raw.sportSkills : [],
     sportTechniqueReviews: Array.isArray(raw.sportTechniqueReviews) ? raw.sportTechniqueReviews : [],
     savingsEntries: Array.isArray(raw.savingsEntries) ? raw.savingsEntries : [],
+    savingsAccounts: Array.isArray(raw.savingsAccounts) ? raw.savingsAccounts : [],
     savingsBattleSync: raw.savingsBattleSync && typeof raw.savingsBattleSync === 'object' ? raw.savingsBattleSync : {},
     recurringSavings: Array.isArray(raw.recurringSavings) ? raw.recurringSavings : [],
     habits: Array.isArray(raw.habits) ? raw.habits : [],
@@ -732,6 +778,17 @@ function normalizeData(raw = {}) {
     source: item.source || '',
     sourceTransactionId: item.sourceTransactionId || '',
     sourceRecordDate: item.sourceRecordDate || '',
+    accountId: item.accountId || '',
+  }));
+  next.savingsAccounts = next.savingsAccounts.map((item) => ({
+    id: item.id || crypto.randomUUID(),
+    name: item.name || '未命名账户',
+    type: ['bank', 'ewallet', 'investment', 'cash', 'other'].includes(item.type) ? item.type : 'other',
+    balance: Math.max(0, Number(item.balance || 0)),
+    image: item.image || '',
+    note: item.note || '',
+    createdAt: item.createdAt || new Date().toISOString(),
+    updatedAt: item.updatedAt || item.createdAt || new Date().toISOString(),
   }));
   Object.entries(next.savingsBattleSync).forEach(([transactionId, decision]) => {
     if (!decision || !['approved', 'declined'].includes(decision.status)) delete next.savingsBattleSync[transactionId];
@@ -6095,6 +6152,37 @@ document.querySelector('#managerHead').addEventListener('click', (event) => {
 });
 
 document.querySelector('#addSavingEntryBtn')?.addEventListener('click', () => openSavingForm());
+document.querySelector('#addSavingsAccountBtn')?.addEventListener('click', () => openSavingsAccountForm());
+document.querySelector('#savingsAccountImageInput')?.addEventListener('change', async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  pendingSavingsAccountImage = await compressImage(file);
+  const preview = document.querySelector('#savingsAccountImagePreview');
+  preview.style.backgroundImage = `url('${pendingSavingsAccountImage}')`;
+  preview.classList.add('has-image');
+});
+document.querySelector('#savingsAccountForm')?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!requireCloudAuth(isZh() ? '保存资产账户' : 'save asset accounts')) return;
+  const id = document.querySelector('#savingsAccountEditId').value;
+  const old = (data.savingsAccounts || []).find((item) => item.id === id);
+  const account = {
+    id: id || crypto.randomUUID(),
+    name: document.querySelector('#savingsAccountNameInput').value.trim(),
+    type: document.querySelector('#savingsAccountTypeInput').value,
+    balance: Math.max(0, Number(document.querySelector('#savingsAccountBalanceInput').value || 0)),
+    image: pendingSavingsAccountImage,
+    note: document.querySelector('#savingsAccountNoteInput').value.trim(),
+    createdAt: old?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  if (!account.name) return;
+  checkpoint(id ? '更新资产账户余额' : '新增资产账户');
+  if (old) data.savingsAccounts = data.savingsAccounts.map((item) => item.id === id ? account : item);
+  else data.savingsAccounts = [...(data.savingsAccounts || []), account];
+  saveData(); document.querySelector('#savingsAccountDialog').close(); render();
+  showToast('资产账户已对齐', `${account.name} · RM ${money(account.balance)}`);
+});
 document.querySelector('#battleSyncBtn')?.addEventListener('click', openBattleSyncDialog);
 document.querySelector('#battleSyncDialog')?.addEventListener('click', (event) => {
   const action = event.target.closest('[data-battle-sync-action]');
@@ -6142,6 +6230,7 @@ document.querySelector('#savingForm')?.addEventListener('submit', (event) => {
     title: document.querySelector('#savingTitleInput').value.trim(),
     amount: Math.abs(Number(document.querySelector('#savingAmountInput').value || 0)),
     note: document.querySelector('#savingNoteInput').value.trim(),
+    accountId: document.querySelector('#savingAccountInput').value,
     createdAt: (data.savingsEntries || []).find((item) => item.id === id)?.createdAt || new Date().toISOString(),
   };
   if (!entry.title || !entry.amount || !entry.date) return;
@@ -6162,6 +6251,8 @@ document.querySelector('#savingsView')?.addEventListener('click', (event) => {
   const editRecurring = event.target.closest('[data-edit-recurring]');
   const toggleRecurring = event.target.closest('[data-toggle-recurring]');
   const deleteRecurring = event.target.closest('[data-delete-recurring]');
+  const editAccount = event.target.closest('[data-edit-savings-account]');
+  const deleteAccount = event.target.closest('[data-delete-savings-account]');
   if (mode) { savingsMode = mode.dataset.savingsMode; renderSavings(); }
   if (ai) analyzeSavings(ai.dataset.aiSaving);
   if (openReward) openSavingsReward();
@@ -6180,11 +6271,23 @@ document.querySelector('#savingsView')?.addEventListener('click', (event) => {
   if (editRecurring) openRecurringForm(data.recurringSavings.find((x) => x.id === editRecurring.dataset.editRecurring));
   if (toggleRecurring) { const item = data.recurringSavings.find((x) => x.id === toggleRecurring.dataset.toggleRecurring); if (item) { checkpoint('切换固定项目'); item.active = !item.active; saveData(); render(); } }
   if (deleteRecurring && window.confirm('删除这个固定项目？已经自动写入的旧记录会保留。')) { checkpoint('删除固定项目'); data.recurringSavings = data.recurringSavings.filter((x) => x.id !== deleteRecurring.dataset.deleteRecurring); saveData(); render(); }
+  if (editAccount) {
+    const account = (data.savingsAccounts || []).find((item) => item.id === editAccount.dataset.editSavingsAccount);
+    if (account) openSavingsAccountForm(account);
+  }
+  if (deleteAccount && window.confirm('删除这个资产账户？账本记录会保留，但会变成未分配账户。')) {
+    if (!requireCloudAuth('删除资产账户')) return;
+    checkpoint('删除资产账户');
+    const accountId = deleteAccount.dataset.deleteSavingsAccount;
+    data.savingsAccounts = (data.savingsAccounts || []).filter((item) => item.id !== accountId);
+    data.savingsEntries = (data.savingsEntries || []).map((entry) => entry.accountId === accountId ? { ...entry, accountId: '' } : entry);
+    saveData(); render();
+  }
 });
 document.querySelector('#savingsStartInput')?.addEventListener('change', () => { savingsMode = 'range'; renderSavings(); });
 document.querySelector('#savingsEndInput')?.addEventListener('change', () => { savingsMode = 'range'; renderSavings(); });
 document.querySelector('#savingDialog .close-btn')?.addEventListener('click', () => document.querySelector('#savingDialog').close());
-['recurringDialog','savingsGoalDialog','savingsAiDialog','battleSyncDialog'].forEach((id) => document.querySelector(`#${id} .close-btn`)?.addEventListener('click', () => document.querySelector(`#${id}`).close()));
+['recurringDialog','savingsGoalDialog','savingsAiDialog','battleSyncDialog','savingsAccountDialog'].forEach((id) => document.querySelector(`#${id} .close-btn`)?.addEventListener('click', () => document.querySelector(`#${id}`).close()));
 
 document.querySelectorAll('.nav-item[data-view]').forEach((button) => {
   button.addEventListener('click', () => {

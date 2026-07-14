@@ -4,9 +4,17 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ## [Unreleased]
 
-### Planned
+### Added
 
-- Continue improving mobile usability, analytics, and evidence-based AI coaching.
+- Asset-account tracking for banks, e-wallets, investments, cash, and other holdings.
+- Custom account images, exact balances, allocation percentages, and last-updated timestamps.
+- Actual total assets separated from ledger net cash flow.
+- Reconciliation difference with a clear RM0 fully-aligned state.
+- Optional account assignment for every savings-ledger entry.
+
+### Changed
+
+- Renamed the former all-time savings figure to ledger net cash flow so it is not mistaken for current bank balances.
 
 ## [1.0.0] - 2026-07-14
 
