@@ -70,11 +70,11 @@ The interface is optimized for fast daily use on desktop and mobile, with a dark
 
 - Record income and expenses without changing battle or reward algorithms.
 - Track the exact current balance of each bank, e-wallet, investment account, or cash holding with custom account images.
-- Model credit cards as liabilities: charges increase outstanding debt while refunds or payments reduce it.
-- View actual assets, credit-card liabilities, and net worth as separate totals.
+- Mark any self-created account as a credit card; its signed negative balance deducts directly from the combined account total.
+- Move money between accounts without changing income, expenses, or ledger net cash flow, with a reversible transfer history.
 - Compare actual account assets against ledger net cash flow and expose the reconciliation difference.
 - Assign individual ledger entries to the account where money entered or left.
-- Configure recurring monthly income, bills, subscriptions, and transfers.
+- Configure recurring monthly income, bills, and subscriptions against a specific account.
 - View total net savings and filtered cash-flow summaries.
 - Forecast next-month savings from recurring and recent actual data.
 - Set milestone goals and unlock AI-generated rewards.

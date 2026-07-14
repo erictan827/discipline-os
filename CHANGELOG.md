@@ -14,14 +14,14 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 - Per-status transaction counts and total spending amounts in the battle-expense synchronization center.
 - Automatic account-balance updates when ledger entries are created, edited, deleted, approved, declined, or re-synced.
 - Account selection for recurring income, bills, and subscriptions, with automatic balance effects when entries materialize.
-- Credit-card liability accounts for subscription and spending charges.
-- Separate actual assets, credit-card liabilities, and net-worth totals.
-- Credit-card-aware accounting where expenses increase debt and refunds or payments reduce debt.
+- User-controlled credit-card designation on any account, with signed negative balances that deduct directly from the account total.
+- Reversible account-to-account transfers with source, destination, date, amount, and notes preserved in transfer history.
 - Migration-safe account-effect markers so pre-fix ledger entries are applied exactly once and never incorrectly reversed.
 
 ### Changed
 
 - Renamed the former all-time savings figure to ledger net cash flow so it is not mistaken for current bank balances.
+- Simplified the former asset/liability/net-worth dashboard into one signed account total and one reconciliation result.
 
 ## [1.0.0] - 2026-07-14
 
