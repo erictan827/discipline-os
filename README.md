@@ -76,6 +76,8 @@ The interface is optimized for fast daily use on desktop and mobile, with a dark
 - Compare actual account assets against ledger net cash flow and expose the reconciliation difference.
 - Assign individual ledger entries to the account where money entered or left.
 - Configure recurring monthly income, bills, and subscriptions against a specific account.
+- Instantly distinguish auto-generated recurring and subscription charges through a dedicated highlighted ledger treatment.
+- Search ledger records by date, project, account, type, amount, note, or source and paginate them at 10, 50, or 100 rows per page.
 - View total net savings and filtered cash-flow summaries.
 - Forecast next-month savings from recurring and recent actual data.
 - Set milestone goals and unlock AI-generated rewards.

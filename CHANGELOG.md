@@ -17,12 +17,16 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 - User-controlled credit-card designation on any account, with signed negative balances that deduct directly from the account total.
 - Reversible account-to-account transfers with source, destination, date, amount, and notes preserved in transfer history.
 - Credit-card repayment inside the cash-flow form, deducting the chosen funding account and reducing card debt without double-counting an expense.
+- Full-ledger search across dates, projects, accounts, amounts, types, notes, battle-sync sources, and recurring subscriptions.
+- Selectable 10, 50, or 100-row ledger pagination with previous/next navigation and result counts.
+- Visually elevated recurring and subscription entries so automatic deductions are immediately recognizable.
 - Migration-safe account-effect markers so pre-fix ledger entries are applied exactly once and never incorrectly reversed.
 
 ### Changed
 
 - Renamed the former all-time savings figure to ledger net cash flow so it is not mistaken for current bank balances.
 - Simplified the former asset/liability/net-worth dashboard into one signed account total and one reconciliation result.
+- Strengthened cash-flow type selection with solid green income, red expense, and white credit-payment states; fixed ledger action-label overflow.
 
 ## [1.0.0] - 2026-07-14
 
