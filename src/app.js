@@ -217,7 +217,10 @@ function adjustAccountForEntry(entry, direction = 1) {
   if (!entry?.accountId) return;
   const account = (data.savingsAccounts || []).find((item) => item.id === entry.accountId);
   if (!account) return;
-  const signedAmount = (entry.type === 'income' ? 1 : -1) * Number(entry.amount || 0) * direction;
+  const multiplier = account.type === 'creditCard'
+    ? (entry.type === 'expense' ? 1 : -1)
+    : (entry.type === 'income' ? 1 : -1);
+  const signedAmount = multiplier * Number(entry.amount || 0) * direction;
   account.balance = Math.max(0, Number(account.balance || 0) + signedAmount);
   account.updatedAt = new Date().toISOString();
 }
@@ -238,23 +241,28 @@ function openSavingsAccountForm(item = null) {
 
 function renderSavingsAccounts(ledgerNet) {
   const accounts = data.savingsAccounts || [];
-  const total = accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
-  const difference = total - ledgerNet;
-  document.querySelector('#actualAssetTotal').textContent = money(total);
+  const totalAssets = accounts.filter((account) => account.type !== 'creditCard').reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  const totalLiabilities = accounts.filter((account) => account.type === 'creditCard').reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  const netWorth = totalAssets - totalLiabilities;
+  const difference = netWorth - ledgerNet;
+  document.querySelector('#actualAssetTotal').textContent = money(totalAssets);
+  document.querySelector('#creditLiabilityTotal').textContent = money(totalLiabilities);
+  document.querySelector('#netWorthTotal').textContent = `${netWorth < 0 ? '− ' : ''}${money(Math.abs(netWorth))}`;
   document.querySelector('#accountReconcileValue').textContent = `${difference > 0 ? '+' : difference < 0 ? '−' : ''} RM ${money(Math.abs(difference))}`;
   document.querySelector('#accountReconcileValue').className = Math.abs(difference) < 0.005 ? 'aligned' : 'different';
   document.querySelector('#accountReconcileCopy').textContent = !accounts.length
     ? '先加入 RHB、TNG、ASNB 等账户，才能看到真实资产。'
     : Math.abs(difference) < 0.005
-      ? '✓ 账户实额与账本净现金流完全对齐。'
-      : `账户实额与账本相差 RM ${money(Math.abs(difference))}；可能来自开户前余额、漏记交易或账户间转账。`;
+      ? '✓ 净资产与账本净现金流完全对齐。'
+      : `净资产与账本相差 RM ${money(Math.abs(difference))}；可能来自开户前余额、漏记交易或账户间转账。`;
   const grid = document.querySelector('#savingsAccountGrid');
   grid.innerHTML = accounts.length ? accounts.map((account) => {
-    const ratio = total > 0 ? Number(account.balance || 0) / total * 100 : 0;
-    const fallback = { bank: 'BANK', ewallet: 'WALLET', investment: 'INVEST', cash: 'CASH', other: 'ASSET' }[account.type] || 'ASSET';
+    const ratioBase = account.type === 'creditCard' ? totalLiabilities : totalAssets;
+    const ratio = ratioBase > 0 ? Number(account.balance || 0) / ratioBase * 100 : 0;
+    const fallback = { bank: 'BANK', ewallet: 'WALLET', investment: 'INVEST', cash: 'CASH', creditCard: 'CREDIT', other: 'ASSET' }[account.type] || 'ASSET';
     return `<article class="savings-account-card">
       <div class="savings-account-image ${account.image ? 'has-image' : ''}" ${account.image ? `style="background-image:url('${account.image}')"` : ''}><span>${account.image ? '' : fallback}</span></div>
-      <div class="savings-account-main"><span>${escapeHtml(account.typeLabel || fallback)}</span><h4>${escapeHtml(account.name)}</h4><strong>RM ${money(account.balance)}</strong><small>${ratio.toFixed(1)}% 总资产 · 更新 ${formatDateKey(keyOf(new Date(account.updatedAt)))}</small><i><u style="width:${Math.min(100, ratio)}%"></u></i>${account.note ? `<p>${escapeHtml(account.note)}</p>` : ''}</div>
+      <div class="savings-account-main ${account.type === 'creditCard' ? 'credit-card' : ''}"><span>${escapeHtml(account.typeLabel || fallback)}</span><h4>${escapeHtml(account.name)}</h4><strong>${account.type === 'creditCard' ? '欠款 ' : ''}RM ${money(account.balance)}</strong><small>${ratio.toFixed(1)}% ${account.type === 'creditCard' ? '信用卡负债' : '总资产'} · 更新 ${formatDateKey(keyOf(new Date(account.updatedAt)))}</small><i><u style="width:${Math.min(100, ratio)}%"></u></i>${account.note ? `<p>${escapeHtml(account.note)}</p>` : ''}</div>
       <div class="savings-account-actions"><button data-edit-savings-account="${account.id}">修改</button><button data-delete-savings-account="${account.id}">删除</button></div>
     </article>`;
   }).join('') : '<div class="saving-empty">还没有资产账户。加入 RHB、TNG、ASNB 或现金，真实总资产才会开始计算。</div>';
@@ -391,7 +399,9 @@ function savingsContext(entry = null) {
   const income = entries.filter((x) => x.type === 'income').reduce((s, x) => s + x.amount, 0);
   const expense = entries.filter((x) => x.type === 'expense').reduce((s, x) => s + x.amount, 0);
   const accounts = data.savingsAccounts || [];
-  return { entry, totals: { income, expense, net: income - expense, actualAssets: accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0) }, accounts, recurring: data.recurringSavings || [], goal: data.savingsGoal, recent: entries.slice(-30), profile: 'Eric 重视自律、成长、运动、长期存款；要直接具体的马来西亚华人中文建议。' };
+  const actualAssets = accounts.filter((account) => account.type !== 'creditCard').reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  const creditLiabilities = accounts.filter((account) => account.type === 'creditCard').reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  return { entry, totals: { income, expense, net: income - expense, actualAssets, creditLiabilities, netWorth: actualAssets - creditLiabilities }, accounts, recurring: data.recurringSavings || [], goal: data.savingsGoal, recent: entries.slice(-30), profile: 'Eric 重视自律、成长、运动、长期存款；要直接具体的马来西亚华人中文建议。' };
 }
 
 function showSavingsAI(title, status, content = '') {
@@ -798,7 +808,7 @@ function normalizeData(raw = {}) {
   next.savingsAccounts = next.savingsAccounts.map((item) => ({
     id: item.id || crypto.randomUUID(),
     name: item.name || '未命名账户',
-    type: ['bank', 'ewallet', 'investment', 'cash', 'other'].includes(item.type) ? item.type : 'other',
+    type: ['bank', 'ewallet', 'investment', 'cash', 'creditCard', 'other'].includes(item.type) ? item.type : 'other',
     balance: Math.max(0, Number(item.balance || 0)),
     image: item.image || '',
     note: item.note || '',

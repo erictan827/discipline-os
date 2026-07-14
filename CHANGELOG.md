@@ -14,6 +14,9 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 - Per-status transaction counts and total spending amounts in the battle-expense synchronization center.
 - Automatic account-balance updates when ledger entries are created, edited, deleted, approved, declined, or re-synced.
 - Account selection for recurring income, bills, and subscriptions, with automatic balance effects when entries materialize.
+- Credit-card liability accounts for subscription and spending charges.
+- Separate actual assets, credit-card liabilities, and net-worth totals.
+- Credit-card-aware accounting where expenses increase debt and refunds or payments reduce debt.
 
 ### Changed
 

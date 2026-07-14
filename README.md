@@ -70,6 +70,8 @@ The interface is optimized for fast daily use on desktop and mobile, with a dark
 
 - Record income and expenses without changing battle or reward algorithms.
 - Track the exact current balance of each bank, e-wallet, investment account, or cash holding with custom account images.
+- Model credit cards as liabilities: charges increase outstanding debt while refunds or payments reduce it.
+- View actual assets, credit-card liabilities, and net worth as separate totals.
 - Compare actual account assets against ledger net cash flow and expose the reconciliation difference.
 - Assign individual ledger entries to the account where money entered or left.
 - Configure recurring monthly income, bills, subscriptions, and transfers.
