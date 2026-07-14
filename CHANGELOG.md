@@ -16,6 +16,7 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 - Account selection for recurring income, bills, and subscriptions, with automatic balance effects when entries materialize.
 - User-controlled credit-card designation on any account, with signed negative balances that deduct directly from the account total.
 - Reversible account-to-account transfers with source, destination, date, amount, and notes preserved in transfer history.
+- Credit-card repayment inside the cash-flow form, deducting the chosen funding account and reducing card debt without double-counting an expense.
 - Migration-safe account-effect markers so pre-fix ledger entries are applied exactly once and never incorrectly reversed.
 
 ### Changed

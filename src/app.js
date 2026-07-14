@@ -211,7 +211,37 @@ function openSavingForm(item = null) {
   accountSelect.innerHTML = `<option value="">未分配账户</option>${(data.savingsAccounts || []).map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join('')}`;
   accountSelect.value = item?.accountId || '';
   document.querySelector(`input[name="savingType"][value="${item?.type || 'income'}"]`).checked = true;
+  document.querySelector('input[name="savingType"][value="creditPayment"]').disabled = Boolean(item);
+  updateSavingFormMode();
   document.querySelector('#savingDialog').showModal();
+}
+
+function updateSavingFormMode() {
+  const mode = document.querySelector('input[name="savingType"]:checked')?.value || 'income';
+  const isPayment = mode === 'creditPayment';
+  const accounts = data.savingsAccounts || [];
+  const payerSelect = document.querySelector('#savingAccountInput');
+  const currentPayer = payerSelect.value;
+  const selectableAccounts = isPayment ? accounts.filter((account) => !account.isCreditCard) : accounts;
+  payerSelect.innerHTML = `${isPayment ? '' : '<option value="">未分配账户</option>'}${selectableAccounts.map((account) => `<option value="${account.id}">${escapeHtml(account.name)} · ${Number(account.balance || 0) < 0 ? '− ' : ''}RM ${money(Math.abs(Number(account.balance || 0)))}</option>`).join('')}`;
+  if ([...payerSelect.options].some((option) => option.value === currentPayer)) payerSelect.value = currentPayer;
+  document.querySelector('#savingAccountLabel').textContent = isPayment ? '从哪个账户扣款' : '钱进入／来自哪个账户';
+  document.querySelector('#savingStandardFields').hidden = isPayment;
+  document.querySelector('#savingTitleInput').required = !isPayment;
+  document.querySelector('#savingCreditPaymentField').hidden = !isPayment;
+  document.querySelector('#savingSubmitBtn').textContent = isPayment ? '确认还款并更新两个账户' : '保存到独立账本';
+  document.querySelector('#savingDialogCopy').textContent = isPayment ? '还款不会再次算作花费；系统只会扣付款账户并减少信用卡负数余额。' : '收入和花费会进入账本；信用卡还款只移动账户余额，避免重复计算花费。';
+  if (!isPayment) return;
+  const creditSelect = document.querySelector('#savingCreditAccountInput');
+  const creditAccounts = accounts.filter((account) => account.isCreditCard);
+  creditSelect.innerHTML = creditAccounts.length ? creditAccounts.map((account) => `<option value="${account.id}">${escapeHtml(account.name)} · 欠款 RM ${money(Math.max(0, -Number(account.balance || 0)))}</option>`).join('') : '<option value="">还没有信用卡账户</option>';
+  updateCreditPaymentHelp();
+}
+
+function updateCreditPaymentHelp() {
+  const account = (data.savingsAccounts || []).find((item) => item.id === document.querySelector('#savingCreditAccountInput')?.value);
+  const debt = Math.max(0, -Number(account?.balance || 0));
+  document.querySelector('#savingCreditDebtHelp').textContent = account ? `${account.name} 目前欠款 RM ${money(debt)}；最多只会扣到 RM 0.00。` : '请先在“钱分别在哪里”添加并勾选一个信用卡账户。';
 }
 
 function adjustAccountForEntry(entry, direction = 1) {
@@ -275,7 +305,7 @@ function renderSavingsTransfers() {
   root.innerHTML = transfers.length ? transfers.map((item) => {
     const from = (data.savingsAccounts || []).find((account) => account.id === item.fromAccountId);
     const to = (data.savingsAccounts || []).find((account) => account.id === item.toAccountId);
-    return `<div class="savings-transfer-row"><span>${formatDateKey(item.date)}</span><div><strong>${escapeHtml(from?.name || item.fromAccountName || '已删除账户')} <b>→</b> ${escapeHtml(to?.name || item.toAccountName || '已删除账户')}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}</div><b>RM ${money(item.amount)}</b><button data-delete-savings-transfer="${item.id}">撤销转账</button></div>`;
+    return `<div class="savings-transfer-row"><span>${formatDateKey(item.date)}${item.kind === 'creditPayment' ? '<em>信用卡还款</em>' : ''}</span><div><strong>${escapeHtml(from?.name || item.fromAccountName || '已删除账户')} <b>→</b> ${escapeHtml(to?.name || item.toAccountName || '已删除账户')}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}</div><b>RM ${money(item.amount)}</b><button data-delete-savings-transfer="${item.id}">撤销转账</button></div>`;
   }).join('') : '<div class="saving-empty compact-empty">还没有账户转账记录。</div>';
 }
 
@@ -836,6 +866,7 @@ function normalizeData(raw = {}) {
     title: item.title || '',
     amount: Math.abs(Number(item.amount || 0)),
     note: item.note || '',
+    kind: item.kind === 'creditPayment' ? 'creditPayment' : 'transfer',
     createdAt: item.createdAt || new Date().toISOString(),
     aiReview: item.aiReview || null,
     recurringKey: item.recurringKey || null,
@@ -6234,6 +6265,8 @@ document.querySelector('#managerHead').addEventListener('click', (event) => {
 });
 
 document.querySelector('#addSavingEntryBtn')?.addEventListener('click', () => openSavingForm());
+document.querySelectorAll('input[name="savingType"]').forEach((input) => input.addEventListener('change', updateSavingFormMode));
+document.querySelector('#savingCreditAccountInput')?.addEventListener('change', updateCreditPaymentHelp);
 document.querySelector('#addSavingsAccountBtn')?.addEventListener('click', () => openSavingsAccountForm());
 document.querySelector('#transferSavingsAccountBtn')?.addEventListener('click', openSavingsTransferForm);
 document.querySelector('#savingsAccountImageInput')?.addEventListener('change', async (event) => {
@@ -6335,13 +6368,33 @@ document.querySelector('#recurringForm')?.addEventListener('submit', (event) => 
 document.querySelector('#savingForm')?.addEventListener('submit', (event) => {
   event.preventDefault();
   if (!requireCloudAuth(isZh() ? '记录存钱账本' : 'save ledger entries')) return;
+  const selectedType = document.querySelector('input[name="savingType"]:checked').value;
+  if (selectedType === 'creditPayment') {
+    const fromAccountId = document.querySelector('#savingAccountInput').value;
+    const toAccountId = document.querySelector('#savingCreditAccountInput').value;
+    const from = (data.savingsAccounts || []).find((account) => account.id === fromAccountId && !account.isCreditCard);
+    const to = (data.savingsAccounts || []).find((account) => account.id === toAccountId && account.isCreditCard);
+    const requestedAmount = Math.abs(Number(document.querySelector('#savingAmountInput').value || 0));
+    const debt = Math.max(0, -Number(to?.balance || 0));
+    const amount = Math.min(requestedAmount, debt);
+    if (!from || !to || !requestedAmount) { showToast('还款资料不完整', '请选择付款账户、信用卡与还款金额。'); return; }
+    if (!debt) { showToast('这张信用卡已经还清', `${to.name} 当前余额是 RM 0.00。`); return; }
+    if (Number(from.balance || 0) < amount) { showToast('付款账户余额不足', `${from.name} 目前只有 RM ${money(from.balance)}。`); return; }
+    const transfer = { id: crypto.randomUUID(), kind: 'creditPayment', fromAccountId, toAccountId, fromAccountName: from.name, toAccountName: to.name, amount, date: document.querySelector('#savingDateInput').value || keyOf(), note: document.querySelector('#savingNoteInput').value.trim() || `偿还 ${to.name}`, createdAt: new Date().toISOString() };
+    checkpoint('偿还信用卡');
+    applySavingsTransfer(transfer, 1);
+    data.savingsTransfers = [...(data.savingsTransfers || []), transfer];
+    saveData(); document.querySelector('#savingDialog').close(); render();
+    showToast(requestedAmount > debt ? '信用卡已全额还清' : '信用卡还款完成', `${from.name} − RM ${money(amount)} · ${to.name} 剩余欠款 RM ${money(Math.max(0, debt - amount))}`);
+    return;
+  }
   const id = document.querySelector('#savingEditId').value;
   const oldEntry = (data.savingsEntries || []).find((item) => item.id === id);
   const entry = {
     ...((data.savingsEntries || []).find((item) => item.id === id) || {}),
     id: id || crypto.randomUUID(),
     date: document.querySelector('#savingDateInput').value,
-    type: document.querySelector('input[name="savingType"]:checked').value,
+    type: selectedType,
     title: document.querySelector('#savingTitleInput').value.trim(),
     amount: Math.abs(Number(document.querySelector('#savingAmountInput').value || 0)),
     note: document.querySelector('#savingNoteInput').value.trim(),

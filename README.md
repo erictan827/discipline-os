@@ -72,6 +72,7 @@ The interface is optimized for fast daily use on desktop and mobile, with a dark
 - Track the exact current balance of each bank, e-wallet, investment account, or cash holding with custom account images.
 - Mark any self-created account as a credit card; its signed negative balance deducts directly from the combined account total.
 - Move money between accounts without changing income, expenses, or ledger net cash flow, with a reversible transfer history.
+- Repay a selected credit card directly from the cash-flow form; repayment is capped at the outstanding debt and can bring the card precisely back to zero.
 - Compare actual account assets against ledger net cash flow and expose the reconciliation difference.
 - Assign individual ledger entries to the account where money entered or left.
 - Configure recurring monthly income, bills, and subscriptions against a specific account.
