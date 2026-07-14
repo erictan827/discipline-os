@@ -213,6 +213,15 @@ function openSavingForm(item = null) {
   document.querySelector('#savingDialog').showModal();
 }
 
+function adjustAccountForEntry(entry, direction = 1) {
+  if (!entry?.accountId) return;
+  const account = (data.savingsAccounts || []).find((item) => item.id === entry.accountId);
+  if (!account) return;
+  const signedAmount = (entry.type === 'income' ? 1 : -1) * Number(entry.amount || 0) * direction;
+  account.balance = Math.max(0, Number(account.balance || 0) + signedAmount);
+  account.updatedAt = new Date().toISOString();
+}
+
 function openSavingsAccountForm(item = null) {
   pendingSavingsAccountImage = item?.image || '';
   document.querySelector('#savingsAccountEditId').value = item?.id || '';
@@ -322,9 +331,12 @@ function setBattleSyncStatus(transactionId, status) {
       sourceTransactionId: transactionId,
       sourceRecordDate: source.recordDate,
     };
+    if (existing) adjustAccountForEntry(existing, -1);
+    adjustAccountForEntry(nativeEntry, 1);
     if (existing) data.savingsEntries = data.savingsEntries.map((entry) => entry.id === existing.id ? nativeEntry : entry);
     else data.savingsEntries = [...(data.savingsEntries || []), nativeEntry];
   } else {
+    if (existing) adjustAccountForEntry(existing, -1);
     data.savingsEntries = (data.savingsEntries || []).filter((entry) => entry.sourceTransactionId !== transactionId);
   }
   if (status === 'pending') delete data.savingsBattleSync[transactionId];
@@ -363,7 +375,9 @@ function materializeRecurringSavings() {
       const date = new Date(y, m, Math.min(item.day, new Date(y, m + 1, 0).getDate()));
       const recurringKey = `${recurringSignature(item)}|${y}-${String(m + 1).padStart(2, '0')}`;
       if (date <= today && !(data.savingsEntries || []).some((entry) => entry.recurringKey === recurringKey)) {
-        data.savingsEntries.push({ id: crypto.randomUUID(), date: keyOf(date), type: item.type, title: item.title, amount: item.amount, note: '每月固定项目 · 自动记入', recurringKey, recurringId: item.id, createdAt: new Date().toISOString(), aiReview: null });
+        const entry = { id: crypto.randomUUID(), date: keyOf(date), type: item.type, title: item.title, amount: item.amount, note: '每月固定项目 · 自动记入', recurringKey, recurringId: item.id, accountId: item.accountId || '', createdAt: new Date().toISOString(), aiReview: null };
+        data.savingsEntries.push(entry);
+        adjustAccountForEntry(entry, 1);
         changed = true;
       }
       cursor = new Date(y, m + 1, 1);
@@ -457,7 +471,7 @@ function renderSavings() {
   document.querySelector('#savingsGoalBar').style.width = `${goalPct}%`;
   document.querySelector('#savingsRewardBox').innerHTML = !goal ? '<div class="saving-empty">先设置一个储蓄目标，系统才会生成神秘箱。</div>' : goal.reward ? `<article class="savings-mystery-box opened"><span>已开箱</span><div class="mystery-glyph">${escapeHtml(goal.reward.glyph || '✦')}</div><h4>${escapeHtml(goal.reward.title || 'AI 奖励')}</h4><p>${escapeHtml(goal.reward.reward || '')}</p><small>${escapeHtml(goal.reward.reason || '')}</small></article>` : `<article class="savings-mystery-box ${goalPct >= 100 ? 'unlocked' : ''}"><span>${goalPct >= 100 ? 'UNLOCKED' : 'LOCKED'}</span><div class="mystery-glyph">?</div><h4>${goalPct >= 100 ? '目标达成，等你领取' : '未知奖励'}</h4><p>${goalPct >= 100 ? 'AI 会在开箱这一刻，按你现在的财务状态决定奖励。' : `还差 RM ${money(Math.max(0, goal.amount - allNet))}`}</p><button data-open-savings-reward ${goalPct >= 100 && !goal.loading ? '' : 'disabled'}>${goal.loading ? 'AI 正在决定…' : '领取并开箱'}</button>${goal.error ? `<small>${escapeHtml(goal.error)}</small>` : ''}</article>`;
   const recurring = document.querySelector('#recurringList');
-  recurring.innerHTML = (data.recurringSavings || []).length ? data.recurringSavings.map((item) => `<div class="recurring-row"><div><strong>${escapeHtml(item.title)}</strong><small>每月 ${item.day} 号 · ${item.active ? '自动记入' : '已暂停'}</small></div><span class="${item.type}">${item.type === 'income' ? '+' : '−'} RM ${money(item.amount)}</span><div><button data-toggle-recurring="${item.id}">${item.active ? '暂停' : '启用'}</button><button data-edit-recurring="${item.id}">修改</button><button data-delete-recurring="${item.id}">删除</button></div></div>`).join('') : '<div class="saving-empty">还没有固定项目。设置后可自动入账和预测下月存款。</div>';
+  recurring.innerHTML = (data.recurringSavings || []).length ? data.recurringSavings.map((item) => { const account = (data.savingsAccounts || []).find((candidate) => candidate.id === item.accountId); return `<div class="recurring-row"><div><strong>${escapeHtml(item.title)}</strong><small>每月 ${item.day} 号 · ${item.active ? '自动记入' : '已暂停'} · ${account ? escapeHtml(account.name) : '未分配账户'}</small></div><span class="${item.type}">${item.type === 'income' ? '+' : '−'} RM ${money(item.amount)}</span><div><button data-toggle-recurring="${item.id}">${item.active ? '暂停' : '启用'}</button><button data-edit-recurring="${item.id}">修改</button><button data-delete-recurring="${item.id}">删除</button></div></div>`; }).join('') : '<div class="saving-empty">还没有固定项目。设置后可自动入账和预测下月存款。</div>';
   list.innerHTML = filtered.length ? filtered.map((item) => { const account = (data.savingsAccounts || []).find((candidate) => candidate.id === item.accountId); return `<div class="saving-row"><span>${formatDateKey(item.date)}</span><div><strong>${escapeHtml(item.title)}</strong>${account ? `<small class="saving-account-label">◎ ${escapeHtml(account.name)}</small>` : ''}${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}${item.sourceTransactionId ? '<small class="saving-sync-label">⇄ 来自战绩同步</small>' : ''}${item.aiReview ? `<small class="saving-ai-label">✦ ${escapeHtml(item.aiReview.label || item.aiReview.verdict || 'AI 已分析')}</small>` : ''}</div><span class="saving-type ${item.type}">${item.type === 'income' ? '收入' : '花费'}</span><span class="saving-amount ${item.type}">${item.type === 'income' ? '+' : '−'} RM ${money(item.amount)}</span><div class="saving-actions"><button data-ai-saving="${item.id}">✦ AI</button><button data-edit-saving="${item.id}">修改</button><button data-delete-saving="${item.id}">删除</button></div></div>`; }).join('') : '<div class="saving-empty">这个范围还没有现金流记录。</div>';
 }
 let activeAIHabitId = null;
@@ -797,7 +811,7 @@ function normalizeData(raw = {}) {
   next.recurringSavings = next.recurringSavings.map((item) => ({
     id: item.id || crypto.randomUUID(), title: item.title || '', type: item.type === 'expense' ? 'expense' : 'income',
     amount: Math.abs(Number(item.amount || 0)), day: Math.max(1, Math.min(31, Number(item.day || 1))),
-    startDate: item.startDate || keyOf(), active: item.active !== false, createdAt: item.createdAt || new Date().toISOString(),
+    startDate: item.startDate || keyOf(), accountId: item.accountId || '', active: item.active !== false, createdAt: item.createdAt || new Date().toISOString(),
   }));
   next.savingsGoal = raw.savingsGoal && typeof raw.savingsGoal === 'object' ? {
     id: raw.savingsGoal.id || crypto.randomUUID(), name: raw.savingsGoal.name || '储蓄目标', amount: Math.abs(Number(raw.savingsGoal.amount || 0)),
@@ -6207,6 +6221,9 @@ function openRecurringForm(item = null) {
   document.querySelector('#recurringAmountInput').value = item?.amount || '';
   document.querySelector('#recurringDayInput').value = item?.day || new Date().getDate();
   document.querySelector('#recurringStartInput').value = item?.startDate || keyOf();
+  const accountSelect = document.querySelector('#recurringAccountInput');
+  accountSelect.innerHTML = `<option value="">未分配账户</option>${(data.savingsAccounts || []).map((account) => `<option value="${account.id}">${escapeHtml(account.name)}</option>`).join('')}`;
+  accountSelect.value = item?.accountId || '';
   document.querySelector(`input[name="recurringType"][value="${item?.type || 'expense'}"]`).checked = true;
   document.querySelector('#recurringDialog').showModal();
 }
@@ -6214,7 +6231,7 @@ document.querySelector('#addRecurringBtn')?.addEventListener('click', () => open
 document.querySelector('#recurringForm')?.addEventListener('submit', (event) => {
   event.preventDefault(); if (!requireCloudAuth('设置固定现金流')) return;
   const id = document.querySelector('#recurringEditId').value; const old = (data.recurringSavings || []).find((x) => x.id === id);
-  const item = { id: id || crypto.randomUUID(), title: document.querySelector('#recurringTitleInput').value.trim(), type: document.querySelector('input[name="recurringType"]:checked').value, amount: Math.abs(Number(document.querySelector('#recurringAmountInput').value)), day: Number(document.querySelector('#recurringDayInput').value), startDate: document.querySelector('#recurringStartInput').value, active: old?.active !== false, createdAt: old?.createdAt || new Date().toISOString() };
+  const item = { id: id || crypto.randomUUID(), title: document.querySelector('#recurringTitleInput').value.trim(), type: document.querySelector('input[name="recurringType"]:checked').value, amount: Math.abs(Number(document.querySelector('#recurringAmountInput').value)), day: Number(document.querySelector('#recurringDayInput').value), startDate: document.querySelector('#recurringStartInput').value, accountId: document.querySelector('#recurringAccountInput').value, active: old?.active !== false, createdAt: old?.createdAt || new Date().toISOString() };
   checkpoint(id ? '修改固定项目' : '新增固定项目');
   data.recurringSavings = id ? data.recurringSavings.map((x) => x.id === id ? item : x) : [...data.recurringSavings, item];
   saveData(); document.querySelector('#recurringDialog').close(); render();
@@ -6223,6 +6240,7 @@ document.querySelector('#savingForm')?.addEventListener('submit', (event) => {
   event.preventDefault();
   if (!requireCloudAuth(isZh() ? '记录存钱账本' : 'save ledger entries')) return;
   const id = document.querySelector('#savingEditId').value;
+  const oldEntry = (data.savingsEntries || []).find((item) => item.id === id);
   const entry = {
     ...((data.savingsEntries || []).find((item) => item.id === id) || {}),
     id: id || crypto.randomUUID(),
@@ -6236,6 +6254,8 @@ document.querySelector('#savingForm')?.addEventListener('submit', (event) => {
   };
   if (!entry.title || !entry.amount || !entry.date) return;
   checkpoint(id ? '修改存钱账本' : '新增存钱账本');
+  if (oldEntry) adjustAccountForEntry(oldEntry, -1);
+  adjustAccountForEntry(entry, 1);
   if (id) data.savingsEntries = (data.savingsEntries || []).map((item) => item.id === id ? entry : item);
   else data.savingsEntries = [...(data.savingsEntries || []), entry];
   saveData();
@@ -6265,6 +6285,7 @@ document.querySelector('#savingsView')?.addEventListener('click', (event) => {
     if (!requireCloudAuth('删除存钱账本记录')) return;
     checkpoint('删除存钱账本');
     const removed = (data.savingsEntries || []).find((item) => item.id === remove.dataset.deleteSaving);
+    if (removed) adjustAccountForEntry(removed, -1);
     data.savingsEntries = (data.savingsEntries || []).filter((item) => item.id !== remove.dataset.deleteSaving);
     if (removed?.sourceTransactionId) delete data.savingsBattleSync[removed.sourceTransactionId];
     saveData(); render();

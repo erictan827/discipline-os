@@ -12,6 +12,8 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 - Reconciliation difference with a clear RM0 fully-aligned state.
 - Optional account assignment for every savings-ledger entry.
 - Per-status transaction counts and total spending amounts in the battle-expense synchronization center.
+- Automatic account-balance updates when ledger entries are created, edited, deleted, approved, declined, or re-synced.
+- Account selection for recurring income, bills, and subscriptions, with automatic balance effects when entries materialize.
 
 ### Changed
 
