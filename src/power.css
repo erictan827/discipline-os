@@ -1,0 +1,107 @@
+/* Power Pass: bigger type, correct Chinese typography, constant kinetic pressure. */
+html[lang="zh-CN"] body,
+html[lang="zh-CN"] button,
+html[lang="zh-CN"] input,
+html[lang="zh-CN"] .section-label,
+html[lang="zh-CN"] .battle-code,
+html[lang="zh-CN"] .midnight-box span,
+html[lang="zh-CN"] .midnight-box em,
+html[lang="zh-CN"] .record-ribbon span,
+html[lang="zh-CN"] .record-ribbon small,
+html[lang="zh-CN"] .identity-line strong,
+html[lang="zh-CN"] .lock-hint,
+html[lang="zh-CN"] .nav-item,
+html[lang="zh-CN"] dialog label {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif !important;
+  letter-spacing: .08em !important;
+}
+html[lang="zh-CN"] .battle-copy h2,
+html[lang="zh-CN"] h1,
+html[lang="zh-CN"] h2,
+html[lang="zh-CN"] h3 { font-weight: 700; letter-spacing: -.035em; }
+
+body { background-size: 140% 140%; animation: ambientField 12s ease-in-out infinite alternate; }
+header { height: 126px; margin-bottom: 34px; }
+h1 { font-size: 31px; font-weight: 650; }
+.eyebrow { font-size: 11px; }
+.nav-item { height: 52px; font-size: 14px; }
+.brand { font-size: 15px; }
+.section-label { font-size: 10px; font-weight: 700; }
+.status-chip, .language-btn { height: 37px; font-size: 10px; }
+.icon-btn { width: 38px; height: 38px; }
+
+.battle-intro { margin-bottom: 27px; align-items: center; }
+.battle-code { font-size: 10px; font-weight: 700; }
+.battle-copy h2 {
+  font-size: clamp(34px,3vw,47px);
+  background: linear-gradient(90deg,#fff 0%,#fff 40%,var(--green) 52%,#fff 65%,#fff 100%);
+  background-size: 240% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: titleCharge 5s linear infinite;
+}
+.battle-copy p { font-size: 14px; color: #8a9189; margin-top: 13px; }
+.war-cry { display:flex; align-items:center; gap:10px; min-height:28px; margin-top:14px; color:var(--green); font-size:12px; }
+.war-cry i { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 14px var(--green); animation:hardPulse 1.15s infinite; }
+.war-cry strong { transition:opacity .25s,transform .25s; }
+.war-cry strong.swap { opacity:0; transform:translateY(5px); }
+.midnight-box { padding: 12px 18px 12px 0; border-width: 3px; position:relative; }
+.midnight-box:after { content:"";position:absolute;right:-3px;top:0;bottom:0;width:3px;background:var(--green);box-shadow:0 0 18px var(--green);animation:countdownAlarm 1.5s infinite; }
+.midnight-box span,.midnight-box em { font-size: 9px; }
+.midnight-box strong { font-size: 34px; margin:7px 0; text-shadow:0 0 20px rgba(182,244,59,.18); }
+
+.record-ribbon>div { min-height: 96px; padding: 19px 25px; transition:.25s; position:relative; overflow:hidden; }
+.record-ribbon>div:hover { background:#161b13; }
+.record-ribbon>div:after { content:"";position:absolute;left:0;right:100%;bottom:0;height:2px;background:var(--green);transition:.35s; }
+.record-ribbon>div:hover:after { right:0; }
+.record-ribbon span { font-size: 9px; }
+.record-ribbon b { font-size: 31px; }
+.record-ribbon small { font-size: 10px; }
+.identity-line strong { font-size: 19px; text-shadow:0 0 15px rgba(182,244,59,.3); }
+.pressure-line { height:28px; display:flex;align-items:center;gap:12px;margin:-8px 2px 14px;color:#4e554e;font:700 8px var(--mono);letter-spacing:1.4px; }
+.pressure-line i { flex:1;height:2px;background:#1e221e;overflow:hidden; }
+.pressure-line u { display:block;width:38%;height:100%;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:pressureSweep 1.8s linear infinite; }
+.pressure-line b { color:var(--green); }
+
+.panel { border-color:#2b302a; }
+.hero-card { min-height:540px; }
+.hero-card:after { animation:heroBreath 2.4s ease-in-out infinite; }
+.zero-orbit { width:320px;height:320px;animation:orbitFloat 3s ease-in-out infinite; }
+.orbit-ticks { animation:orbitSpin 24s linear infinite; }
+.zero-content>span { font-size:10px; }
+.zero-content strong b { font-size:92px; }
+.zero-content strong small { font-size:35px; }
+.zero-content em { font-size:10px;padding:7px 13px; }
+.mission-copy { font-size:14px;line-height:1.75;max-width:200px;color:#8a9189; }
+.primary-btn { min-width:280px;height:62px!important;font-size:13px!important;box-shadow:0 0 0 rgba(182,244,59,0);animation:winButton 1.6s ease-in-out infinite; }
+.ghost-btn { height:62px!important;font-size:11px!important; }
+.lock-hint { font-size:9px;margin-top:13px; }
+.streak-number strong { font-size:79px;animation:numberPower 2s ease-in-out infinite; }
+.streak-number span,.best-row,.saved-change { font-size:10px; }
+.saved-total strong { font-size:56px; }
+.saved-card>p { font-size:11px; }
+.calendar-title h2 { font-size:23px; }
+.calendar-week span,.legend { font-size:9px; }
+.day { height:44px;font-size:12px; }
+.rank-card h2 { font-size:19px; }
+.rank-card>p { font-size:10px; }
+.rank-progress>div:first-child { font-size:9px; }
+blockquote { font-size:12px; }
+.victory-mark { font-size:130px; animation:victoryImpact .55s cubic-bezier(.2,1.8,.3,1); }
+.victory-overlay h2 { font-size:33px; }
+.victory-overlay p { font-size:13px; }
+
+@keyframes ambientField{to{background-position:15% 20%}}
+@keyframes titleCharge{to{background-position:-140% center}}
+@keyframes hardPulse{50%{transform:scale(1.8);box-shadow:0 0 25px var(--green)}}
+@keyframes countdownAlarm{50%{opacity:.35;box-shadow:0 0 5px var(--green)}}
+@keyframes pressureSweep{to{transform:translateX(270%)}}
+@keyframes heroBreath{50%{opacity:.8;transform:translate(-50%,-50%) scale(1.15)}}
+@keyframes orbitSpin{to{transform:rotate(360deg)}}
+@keyframes orbitFloat{50%{transform:translateY(-5px);filter:drop-shadow(0 0 34px rgba(182,244,59,.2))}}
+@keyframes winButton{50%{box-shadow:0 0 34px rgba(182,244,59,.25);transform:translateY(-2px)}}
+@keyframes numberPower{50%{text-shadow:0 0 35px rgba(182,244,59,.4)}}
+@keyframes victoryImpact{0%{transform:scale(2.2);opacity:0}100%{transform:scale(1);opacity:1}}
+
+@media(max-width:1250px){.battle-copy h2{font-size:34px}.record-ribbon>div{padding:16px}.zero-orbit{width:285px;height:285px}.hero-card{min-height:510px}}

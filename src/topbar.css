@@ -1,0 +1,39 @@
+.control-deck{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+.deck-menu,.deck-language,.deck-export,.deck-undo,.deck-account{height:40px;border:1px solid var(--line);border-radius:10px;background:rgba(15,18,15,.92);color:#aab3a7;cursor:pointer;box-sizing:border-box}
+.deck-menu,.deck-language,.deck-export{width:44px;flex:0 0 44px;display:grid;place-items:center;padding:0}
+.deck-menu{color:var(--green)}
+.deck-language{font:800 10px var(--mono);letter-spacing:.8px;color:var(--green)}
+.deck-export{font-size:17px}
+.deck-undo{display:flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;font:700 8px var(--mono);letter-spacing:.6px}
+.deck-undo b{display:grid;place-items:center;min-width:17px;height:17px;border-radius:99px;background:#1b2317;color:var(--green);font-size:8px}
+.deck-undo:disabled{opacity:.35;cursor:not-allowed}
+.deck-account{width:220px;display:grid;grid-template-columns:28px minmax(0,1fr) 14px;align-items:center;gap:10px;padding:5px 10px;text-align:left}
+.deck-account .account-avatar{width:28px;height:28px;border-radius:8px}
+.deck-account .account-copy{display:block;min-width:0;line-height:1.05}
+.deck-account .account-copy b{display:block;font:800 9px var(--mono);color:#dfe7da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.deck-account .account-copy small{display:block;margin-top:4px;font:600 7px var(--mono);color:#687367;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.deck-account em{justify-self:end;color:#596453;font-size:17px;font-style:normal}
+.deck-account.connected{border-color:#40572a;background:#121811}
+.control-deck .status-chip[hidden]{display:none!important}
+.deck-menu:hover,.deck-language:hover,.deck-account:hover,.deck-export:hover,.deck-undo:hover:not(:disabled){border-color:#4e672f;background:#151b12;color:var(--green)}
+
+@media(max-width:760px){
+  header{overflow:visible!important}
+  .control-deck{display:grid!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:40!important;width:100%!important;min-height:60px!important;grid-template-columns:46px minmax(0,1fr) 58px!important;gap:6px!important;padding:6px!important;border:1px solid rgba(126,151,103,.24)!important;border-radius:16px!important;background:linear-gradient(145deg,rgba(20,25,19,.98),rgba(10,13,10,.99))!important;box-shadow:0 14px 35px rgba(0,0,0,.28)!important}
+  .control-deck .deck-menu,.control-deck .deck-account,.control-deck .deck-language{display:grid!important;visibility:visible!important;opacity:1!important;position:relative!important;grid-row:1!important;height:46px!important;border:0!important;background:transparent!important}
+  .control-deck .deck-menu{grid-column:1!important;width:46px!important;place-items:center!important;background:rgba(182,244,59,.055)!important}
+  .control-deck .deck-account{grid-column:2!important;width:100%!important;grid-template-columns:28px minmax(0,1fr) 14px!important;padding:5px 8px!important}
+  .control-deck .deck-language{grid-column:3!important;width:58px!important;place-items:center!important;border-left:1px solid rgba(255,255,255,.06)!important}
+  .control-deck .deck-language span{display:grid;place-items:center;width:44px;height:28px;border:1px solid rgba(182,244,59,.22);border-radius:8px;background:rgba(182,244,59,.05)}
+  .control-deck .deck-undo,.control-deck .deck-export,.control-deck .status-chip{display:none!important}
+}
+
+/* iPhone portrait: use a plain flex row; Safari has shown unreliable sizing
+   with the grid version when rotating back from landscape. */
+@media(max-width:760px) and (orientation:portrait){
+  .control-deck{display:flex!important;flex-flow:row nowrap!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;min-width:0!important;min-height:60px!important}
+  .control-deck .deck-menu{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 46px!important;width:46px!important;order:1!important}
+  .control-deck .deck-account{display:flex!important;align-items:center!important;flex:1 1 auto!important;width:auto!important;min-width:0!important;order:2!important}
+  .control-deck .deck-account .account-copy{flex:1 1 auto!important;min-width:0!important}
+  .control-deck .deck-language{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 58px!important;width:58px!important;order:3!important}
+}

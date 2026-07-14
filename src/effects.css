@@ -1,0 +1,20 @@
+.victory-particle {
+  --x: 0px;
+  --y: 0px;
+  --r: 0deg;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 17px;
+  background: var(--green);
+  box-shadow: 0 0 12px rgba(182,244,59,.7);
+  animation: victoryBurst 1.15s cubic-bezier(.12,.7,.2,1) forwards;
+}
+.victory-particle:nth-of-type(3n) { background: #fff; width: 3px; height: 10px; }
+.victory-particle:nth-of-type(4n) { background: #7bba19; border-radius: 50%; width: 8px; height: 8px; }
+@keyframes victoryBurst {
+  0% { transform: translate(-50%,-50%) scale(.2) rotate(0); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1) rotate(var(--r)); opacity: 0; }
+}

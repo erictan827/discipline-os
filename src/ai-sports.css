@@ -1,0 +1,151 @@
+.ai-advisor-btn{height:36px;border:1px solid #7357a0;border-radius:4px;background:#1a1422;color:#c79cff;font-size:9px;font-weight:800;cursor:pointer}
+.ai-advisor-btn:hover{box-shadow:0 0 18px rgba(190,130,255,.25)}
+.ai-badge{display:inline-flex;align-items:center;gap:5px;color:#c79cff;font-size:9px}
+.ai-badge:before{content:"✦"}
+.ai-badge.loading{animation:hardPulse 1s infinite}
+
+#aiDialog,#sportAiDialog{max-width:none}
+#aiDialog{width:min(840px,94vw)}
+#sportAiDialog{width:min(860px,94vw)}
+
+#aiDialog .ai-shell,#sportAiDialog .ai-shell{padding:34px;position:relative}
+#aiDialog .ai-shell{padding:34px;background:linear-gradient(180deg,rgba(16,19,16,.985),rgba(11,13,11,.99))}
+#aiDialog .ai-head>span,#sportAiDialog .ai-head>span{font:700 9px var(--mono);letter-spacing:1.4px;color:#c79cff}
+#aiDialog .ai-head h2,#sportAiDialog .ai-head h2{font-size:30px;margin:9px 0 5px}
+#aiDialog .ai-head h2{max-width:none;width:100%;padding-right:56px;font-size:clamp(22px,3.2vw,34px);line-height:1.18;letter-spacing:-.8px;white-space:normal;overflow-wrap:anywhere;word-break:break-word;text-wrap:pretty;margin:12px 0 10px}
+#aiDialog .ai-head p,#sportAiDialog .ai-head p{font-size:11px;color:#727972}
+#aiDialog .ai-head p{display:inline-flex;align-items:center;gap:10px;margin:0;padding:8px 12px;border:1px solid rgba(191,145,255,.16);border-radius:999px;background:rgba(26,20,34,.75);font:700 9px var(--mono);letter-spacing:1px;color:#bba2df}
+#aiDialog .ai-analysis,#sportAiDialog .ai-analysis{display:grid;grid-template-columns:130px 1fr;gap:17px;margin:22px 0;padding:20px;border:1px solid #332a41;border-radius:7px;background:#131018}
+#aiDialog .ai-analysis{grid-template-columns:170px minmax(0,1fr);gap:18px;align-items:stretch;margin:22px 0 18px;padding:18px;border-radius:16px;background:linear-gradient(180deg,rgba(24,18,32,.95),rgba(17,14,22,.98));box-shadow:0 18px 40px rgba(0,0,0,.24),inset 0 0 0 1px rgba(185,149,255,.04)}
+#aiDialog .ai-score,#sportAiDialog .ai-score{display:grid;place-items:center;border-right:1px solid #332a41}
+#aiDialog .ai-score-card{display:flex;align-self:stretch;margin:0;padding:16px;border:1px solid rgba(187,145,255,.14);border-radius:14px;background:radial-gradient(circle at 50% 28%,rgba(187,145,255,.14),rgba(187,145,255,.03) 45%,transparent 72%),linear-gradient(180deg,rgba(28,21,37,.92),rgba(18,14,24,.98))}
+#aiDialog .ai-score{border-right:0;min-height:100%;gap:10px}
+#aiDialog .ai-score strong,#sportAiDialog .ai-score strong{font-size:47px;color:#c79cff}
+#aiDialog .ai-score strong{font-size:72px;line-height:.9;letter-spacing:-3px;text-shadow:0 0 18px rgba(199,156,255,.12)}
+#aiDialog .ai-score span,#sportAiDialog .ai-score span{font-size:9px;color:#7e7488}
+#aiDialog .ai-score span{font:700 9px var(--mono);letter-spacing:1.7px;color:#ba9fe0}
+#aiDialog .ai-verdict h3,#sportAiDialog .ai-verdict h3{font-size:21px;margin:0 0 8px}
+#aiDialog .ai-verdict{display:flex;flex-direction:column;justify-content:flex-start;align-self:stretch;margin:0;padding:22px;border:1px solid rgba(191,145,255,.12);border-radius:16px;background:linear-gradient(180deg,rgba(29,22,40,.88),rgba(21,17,28,.96));min-height:100%}
+#aiDialog .ai-verdict h3{font-size:clamp(18px,2.3vw,26px);line-height:1.1;letter-spacing:-.4px;margin:0 0 12px}
+#aiDialog .ai-verdict p,#sportAiDialog .ai-verdict p{font-size:12px;line-height:1.7;color:#a3aaa2}
+#aiDialog .ai-verdict p{font-size:14px;line-height:1.8;color:#c7bad8;max-width:none}
+#aiDialog .ai-details,#sportAiDialog .ai-details{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+#aiDialog .ai-details{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#aiDialog .ai-detail,#sportAiDialog .ai-detail{padding:11px;border:1px solid #2d2931;border-radius:4px}
+#aiDialog .ai-detail{padding:14px 16px;border-radius:12px;border-color:rgba(187,145,255,.1);background:rgba(14,13,18,.86)}
+#aiDialog .ai-detail b,#sportAiDialog .ai-detail b{display:block;color:#c79cff;font-size:9px;margin-bottom:5px}
+#aiDialog .ai-detail b{font:700 9px var(--mono);letter-spacing:1.2px;color:#bb9ce7;margin-bottom:8px}
+#aiDialog .ai-detail span,#sportAiDialog .ai-detail span{font-size:11px;color:#9ca39b}
+#aiDialog .ai-detail span{display:block;font-size:13px;line-height:1.75;color:#d8d1e2}
+#aiDialog .ai-detail-wide{grid-column:1/-1}
+#aiDialog .ai-chat{max-height:230px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+#aiDialog .ai-chat{margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,.06);max-height:260px}
+#aiDialog .ai-message{max-width:min(86%,720px);padding:13px 16px;border-radius:14px;font-size:13px;line-height:1.8;background:#1c201c}
+#aiDialog .ai-message.user{align-self:flex-end;background:#182313;border:1px solid rgba(182,244,59,.12)}
+#aiDialog .ai-message.assistant{background:#171320;border:1px solid rgba(191,145,255,.14);color:#efe6ff}
+#aiDialog .ai-chat form,#aiChatForm{display:flex;align-items:stretch;gap:12px;margin-top:18px}
+#aiChatInput{display:block;flex:1;height:52px;border:1px solid rgba(191,145,255,.16);border-radius:12px;background:#0f1110;color:#fff;padding:0 16px;font-size:14px}
+#aiChatForm button{flex:0 0 100px;height:52px;min-width:100px;border:0;border-radius:12px;background:#b995ff;color:#191220;font:800 10px var(--mono);letter-spacing:1.1px;box-shadow:0 12px 28px rgba(185,149,255,.16)}
+
+@media (max-width: 900px){
+  #aiDialog{width:min(94vw,760px)}
+  #aiDialog .ai-shell{padding:30px 22px 24px}
+  #aiDialog .ai-head h2{max-width:none;padding-right:44px;font-size:clamp(24px,8vw,32px)}
+  #aiDialog .ai-head p{display:flex;white-space:normal}
+  #aiDialog .ai-analysis{grid-template-columns:1fr}
+  #aiDialog .ai-verdict p{max-width:none;font-size:14px}
+  #aiDialog .ai-details{grid-template-columns:1fr}
+  #aiDialog .ai-detail-wide{grid-column:auto}
+  #aiChatInput{height:50px;font-size:14px}
+  #aiChatForm button{min-width:96px}
+}
+
+.sports-hero{display:flex;justify-content:space-between;align-items:end;padding:30px 0;border-bottom:1px solid var(--line)}
+.sports-hero>div>span{font:700 9px var(--mono);color:#4bd9ff;letter-spacing:1.3px}
+.sports-hero h2{font-size:42px;margin:12px 0 8px}
+.sports-hero p{font-size:13px;color:#737a73}
+.sports-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:22px 0}
+.sports-stats article{padding:22px}
+.sports-stats span{font-size:10px;color:#6d746d}
+.sports-stats strong{display:block;font-size:25px;margin-top:12px}
+.sport-value{display:flex;justify-content:space-between;align-items:center;padding:24px}
+.sport-value span{font-size:9px;color:#687068}
+.sport-value h3{font-size:17px;margin:7px 0 0}
+.sport-budget{width:350px}
+.sport-budget strong{float:right;font:600 11px var(--mono)}
+.sport-budget i{display:block;clear:both;height:5px;background:#282d28;margin-top:10px}
+.sport-budget u{display:block;height:100%;background:#4bd9ff}
+.sport-list-head{display:flex;justify-content:space-between;align-items:end;margin:32px 0 15px}
+.sport-list-head h3{font-size:22px;margin:0}
+.sport-list-head span{font-size:10px;color:#697069}
+.sport-list{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.sport-card{padding:20px}
+.sport-card h4{font-size:18px;margin:10px 0}
+.sport-card .sport-meta{display:flex;justify-content:space-between;color:#8b928a;font-size:11px}
+.sport-card footer{display:flex;justify-content:space-between;margin-top:18px}
+.sport-card footer button{border:1px solid #343934;background:#151715;color:#858b85;border-radius:4px;cursor:pointer}
+.sport-ai-copy{margin:12px 0 0;font-size:11px;line-height:1.7;color:#98a09a;min-height:38px}
+.sport-check{display:flex!important;align-items:center;gap:9px;font-size:11px!important}
+.empty-sports{grid-column:1/-1;padding:70px;text-align:center;border:1px dashed #303530;border-radius:7px;color:#666d66}
+
+@media(max-width:760px){
+  .sports-hero{align-items:stretch;gap:20px;padding:22px 0 26px}
+  .sports-hero h2{font-size:clamp(30px,9vw,40px);line-height:1.08;overflow-wrap:anywhere}
+  .sports-hero p{font-size:13px;line-height:1.7}
+  .sports-hero .primary-btn{width:100%}
+  .sports-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+  .sports-stats article{min-width:0;padding:17px 15px}
+  .sports-stats span{font-size:9px;line-height:1.5}
+  .sports-stats strong{font-size:clamp(20px,6.4vw,27px);line-height:1.2;overflow-wrap:anywhere;word-break:normal}
+  .sport-value{align-items:stretch;flex-direction:column;gap:22px;padding:20px 18px}
+  .sport-value h3{font-size:19px;line-height:1.5}
+  .sport-budget{width:100%;min-width:0}
+  .sport-budget strong{font-size:10px}
+  .sport-skill-grid{grid-template-columns:1fr!important}
+  .sport-skill-grid article{min-height:0}
+  .sport-skill-grid .sport-skill-card strong{font-size:20px;line-height:1.55;word-break:normal;overflow-wrap:anywhere}
+  .sport-list-head{align-items:flex-start;flex-direction:column;gap:8px;margin:28px 2px 14px}
+  .sport-list-head h3{font-size:23px}
+  .sport-list-head span{line-height:1.6}
+  .sport-list{grid-template-columns:1fr;gap:12px}
+  .sport-card{padding:19px 18px}
+  .sport-card h4{font-size:20px;line-height:1.35}
+  .sport-card .sport-meta{justify-content:flex-start;gap:22px}
+  .sport-ai-copy{min-height:0;font-size:12px;line-height:1.75}
+  .sport-card footer{align-items:center;gap:12px}
+  .sport-card footer .record-actions{margin-left:auto;display:grid;grid-template-columns:repeat(3,44px);gap:7px}
+  .sport-card footer .mini-action{min-width:44px;width:44px;height:44px}
+  .empty-sports{padding:48px 18px}
+  #sportAiDialog .ai-shell{padding:24px 18px}
+  #sportAiDialog .ai-analysis{grid-template-columns:1fr;padding:16px}
+  #sportAiDialog .ai-score{border-right:0;border-bottom:1px solid #332a41;padding-bottom:16px}
+  #sportAiDialog .ai-details{grid-template-columns:1fr}
+}
+
+@media(max-width:390px){.sports-stats{grid-template-columns:1fr}.sport-card footer{align-items:flex-start;flex-direction:column}.sport-card footer .record-actions{margin-left:0}}
+
+/* Sport skill progression + ExerciseDB library */
+.sports-hero-actions{display:flex;gap:10px;flex-wrap:wrap}.sports-hero-actions .ghost-btn{height:46px;padding:0 18px}
+.sport-progress-head>div>span,.exercise-library-head>div>span{display:block;font:700 8px var(--mono);letter-spacing:1.8px;color:#4bd9ff;margin-bottom:9px}
+.sport-progress-head>div>h3{margin:0}.sport-goal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sport-goal-card{padding:24px;min-width:0;position:relative;overflow:hidden}.sport-goal-card:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-95px;top:-95px;background:rgba(75,217,255,.06)}
+.sport-goal-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.sport-goal-top span{font:700 8px var(--mono);letter-spacing:1.4px;color:#4bd9ff}.sport-goal-top h4{font-size:26px;margin:8px 0 0}.sport-goal-score{display:flex;align-items:flex-end;color:#4bd9ff}.sport-goal-score strong{font-size:48px;line-height:.9;letter-spacing:-2px}.sport-goal-score small{font:700 9px var(--mono);padding-bottom:4px}
+.skill-progress-track{height:9px;border-radius:999px;background:#242a29;margin:22px 0 9px;overflow:hidden}.skill-progress-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#397cff,#4bd9ff,#b6f43b);box-shadow:0 0 18px rgba(75,217,255,.32)}
+.skill-progress-meta{display:flex;justify-content:space-between;gap:12px;font:500 8px var(--mono);color:#747e79}.sport-goal-card>p{font-size:12px;line-height:1.75;color:#a2aaa5;min-height:42px;margin:18px 0}.skill-milestone{padding:13px 14px;border-left:2px solid #4bd9ff;background:rgba(75,217,255,.045)}.skill-milestone span,.skill-milestone strong{display:block}.skill-milestone span{font:700 7px var(--mono);letter-spacing:1.4px;color:#66736e}.skill-milestone strong{font-size:12px;line-height:1.55;margin-top:6px}.skill-last-log{display:block;margin-top:12px;color:#69736d}.skill-card-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:17px}.skill-card-actions button{height:34px;padding:0 11px;border:1px solid #2d3938;border-radius:6px;background:#111615;color:#aebbb7;font:700 8px var(--mono);cursor:pointer}.skill-card-actions button:first-child{border-color:#28505b;color:#71dbf6}.skill-card-actions .danger-lite{color:#dd7e79;border-color:#472b29}.sport-goal-empty{display:flex;flex-direction:column;align-items:center;gap:10px}.sport-goal-empty b{font-size:20px;color:#dfe7e2}.sport-goal-empty span{font-size:12px;line-height:1.7;max-width:560px}.sport-goal-empty button{margin-top:8px}
+.sport-linked-skill{display:inline-flex;width:max-content;margin-top:12px;padding:5px 8px;border-radius:999px;background:rgba(75,217,255,.08);color:#70dbf7;font:700 7px var(--mono);letter-spacing:1px}.sport-training-note{font-size:11px;line-height:1.65;color:#c0c7c2;margin:12px 0;padding:10px 12px;border-left:2px solid #3b4641;background:#111512}
+.exercise-library{padding:26px;margin-top:26px}.exercise-library-head{display:flex;justify-content:space-between;align-items:flex-start;gap:25px}.exercise-library-head h3{font-size:30px;margin:0 0 8px}.exercise-library-head p{margin:0;color:#78817c;font-size:12px}.exercise-toolbar{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:10px;align-items:end;margin:23px 0 13px}.exercise-toolbar label>span{display:block;font:700 8px var(--mono);letter-spacing:1px;color:#7f8a84;margin-bottom:7px}.exercise-toolbar input,.exercise-toolbar select{width:100%;height:42px;border:1px solid #29312d;border-radius:6px;background:#0c100e;color:#e8eeea;padding:0 12px}.exercise-state{font:500 9px var(--mono);color:#68736d;margin:14px 0}.exercise-state button{border:0;background:none;color:#4bd9ff;cursor:pointer;text-decoration:underline}.exercise-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;transition:opacity .2s}.exercise-grid.is-loading{opacity:.4}.exercise-card{display:block;text-align:left;border:1px solid #252e2a;border-radius:10px;background:#0d110f;color:#e8ede9;padding:0;overflow:hidden;cursor:pointer;transition:.2s}.exercise-card:hover{transform:translateY(-2px);border-color:#3d5b5d;box-shadow:0 14px 30px rgba(0,0,0,.28)}.exercise-gif-wrap{display:block;height:190px;background:#eef1ed;overflow:hidden}.exercise-gif-wrap img{display:block;width:100%;height:100%;object-fit:contain}.exercise-card-body{display:flex;flex-direction:column;padding:14px;min-height:142px}.exercise-card-body small{font:700 7px var(--mono);letter-spacing:1.1px;color:#4bd9ff}.exercise-card-body strong{font-size:15px;line-height:1.35;text-transform:capitalize;margin:8px 0}.exercise-card-body>span{font-size:10px;color:#99a39d;margin-top:auto}.exercise-card-body em{font:500 8px var(--mono);font-style:normal;color:#66726b;margin-top:8px}.exercise-pagination{display:flex;justify-content:center;align-items:center;gap:14px;margin:20px 0 8px}.exercise-pagination span{font:700 8px var(--mono);color:#7e8983}.exercise-credit{display:block;color:#59635e;font-size:8px;line-height:1.6;text-align:center}
+#exerciseDialog{width:min(1000px,94vw)}.exercise-detail-shell{padding:28px;position:relative}.exercise-detail-grid{display:grid;grid-template-columns:minmax(320px,.9fr) 1.1fr;gap:30px}.exercise-detail-media{background:#eef1ed;border-radius:12px;overflow:hidden;min-height:480px}.exercise-detail-media img{width:100%;height:100%;object-fit:contain}.exercise-detail-copy>span{font:700 8px var(--mono);letter-spacing:1.8px;color:#4bd9ff}.exercise-detail-copy h2{font-size:34px;line-height:1.15;text-transform:capitalize;margin:12px 0 16px}.exercise-tags{display:flex;gap:7px;flex-wrap:wrap}.exercise-tags b{font:600 8px var(--mono);padding:7px 9px;border-radius:999px;background:#17201c;color:#a7bbb1}.exercise-detail-copy h3{font-size:17px;margin:24px 0 10px}.exercise-detail-copy ol{padding-left:20px;max-height:260px;overflow:auto}.exercise-detail-copy li{font-size:12px;line-height:1.7;color:#aeb6b1;margin-bottom:8px}.exercise-secondary{padding:12px 14px;border:1px solid #28322d;border-radius:7px;margin:18px 0}.exercise-secondary span{font:700 7px var(--mono);color:#66736c}.exercise-secondary p{margin:6px 0 0;font-size:11px;color:#c6cec9}.exercise-detail-actions{display:flex;gap:10px;flex-wrap:wrap}.exercise-detail-actions button{flex:1;min-width:170px}
+#sportSkillDialog,#techniqueDialog{width:min(680px,94vw)}#sportSkillDialog textarea,#sportDialog textarea,#techniqueDialog textarea{width:100%;resize:vertical;border:1px solid var(--line);border-radius:4px;background:#0d0f0d;color:#eef2eb;padding:12px;font:inherit;line-height:1.55}#sportSkillDialog select,#sportDialog select,#techniqueDialog select{width:100%}
+#sportProgressDialog{width:min(960px,94vw)}.skill-analysis-hero{display:grid;grid-template-columns:170px 1fr;gap:28px;align-items:center;padding:22px;border:1px solid #263a3c;border-radius:12px;background:linear-gradient(135deg,rgba(75,217,255,.06),rgba(182,244,59,.03))}.skill-score-ring{width:145px;height:145px;border-radius:50%;display:grid;place-content:center;text-align:center;background:radial-gradient(circle at center,#111615 61%,transparent 62%),conic-gradient(#4bd9ff calc(var(--score)*1%),#26302c 0)}.skill-score-ring strong{font-size:52px;line-height:.9;color:#4bd9ff}.skill-score-ring span{font:700 8px var(--mono);color:#76827c}.skill-analysis-hero>div:last-child>span,.skill-analysis-grid section>span{font:700 8px var(--mono);letter-spacing:1.5px;color:#4bd9ff}.skill-analysis-hero h3{font-size:20px;line-height:1.45;margin:10px 0}.skill-analysis-hero p{font-size:12px;line-height:1.75;color:#aeb8b2}.skill-analysis-hero small{font:700 8px var(--mono);color:#7f8d85}.skill-dimensions{display:grid;gap:10px;margin:20px 0}.skill-dimensions>div{display:grid;grid-template-columns:90px 1fr 34px;align-items:center;gap:12px}.skill-dimensions span,.skill-dimensions b{font:700 8px var(--mono);color:#8d9992}.skill-dimensions b{text-align:right;color:#4bd9ff}.skill-dimensions i{height:6px;border-radius:999px;background:#242c28;overflow:hidden}.skill-dimensions u{display:block;height:100%;background:linear-gradient(90deg,#397cff,#4bd9ff)}.skill-analysis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.skill-analysis-grid section{padding:17px;border:1px solid #28312d;border-radius:9px;background:#101412}.skill-analysis-grid h4{font-size:15px;line-height:1.55;margin:10px 0}.skill-analysis-grid ol,.skill-analysis-grid ul{padding-left:18px;margin:10px 0 0}.skill-analysis-grid li{font-size:11px;line-height:1.65;color:#b7c0ba;margin-bottom:6px}.skill-roadmap{display:grid;gap:8px;margin-top:16px}.skill-roadmap article{display:grid;grid-template-columns:48px 1fr;align-items:center;gap:13px;padding:12px;border:1px solid #272f2b;border-radius:7px;opacity:.65}.skill-roadmap article.done{border-color:#365256;opacity:1;background:rgba(75,217,255,.035)}.skill-roadmap article>b{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#18201d;color:#4bd9ff;font-size:15px}.skill-roadmap strong,.skill-roadmap span{display:block}.skill-roadmap strong{font-size:12px}.skill-roadmap span{font-size:10px;color:#818b85;margin-top:5px}.skill-analysis-actions{display:flex;gap:10px;flex-wrap:wrap}
+.technique-history{margin-top:18px;padding:16px;border:1px solid #28322e;border-radius:9px}.technique-history>span{font:700 8px var(--mono);letter-spacing:1.3px;color:#4bd9ff}.technique-history article{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid #252c29}.technique-history article:last-child{border-bottom:0}.technique-history strong,.technique-history small{display:block}.technique-history strong{font-size:12px}.technique-history small{font-size:8px;color:#77827c;margin-top:5px}.technique-history article>b{font-size:22px;color:#4bd9ff}
+.technique-upload{display:block;cursor:pointer}.technique-upload input{display:none}.technique-upload span{display:grid;place-items:center;min-height:58px;border:1px dashed #3b5558;border-radius:7px;color:#77dff7}.technique-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.technique-preview figure{position:relative;aspect-ratio:1;margin:0;border-radius:6px;overflow:hidden;background:#151a17}.technique-preview img{width:100%;height:100%;object-fit:cover}.technique-preview b{position:absolute;left:5px;top:5px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#111;color:#4bd9ff;font:700 8px var(--mono)}#techniqueResult{margin-top:18px}.technique-score{padding:20px;border:1px solid #30515a;border-radius:10px;background:rgba(75,217,255,.04)}.technique-score>strong{font-size:52px;color:#4bd9ff}.technique-score>span{font:700 8px var(--mono);color:#778882}.technique-score h3{font-size:19px;margin:9px 0}.technique-score p{font-size:12px;line-height:1.7}.technique-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.technique-result-grid section{padding:15px;border:1px solid #29312e;border-radius:8px}.technique-result-grid section>b{font:700 8px var(--mono);letter-spacing:1px;color:#4bd9ff}.technique-result-grid ul{padding-left:18px}.technique-result-grid li,.technique-result-grid p,.technique-result-grid small{font-size:10px;line-height:1.7;color:#a9b3ad}.technique-result-grid article{margin-top:12px;padding-top:10px;border-top:1px solid #272e2b}.technique-result-grid article strong{font-size:12px}
+
+@media(max-width:900px){.sport-goal-grid{grid-template-columns:1fr}.exercise-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.exercise-toolbar{grid-template-columns:1fr 1fr}.exercise-toolbar label:first-child{grid-column:1/-1}.exercise-detail-grid{grid-template-columns:1fr}.exercise-detail-media{min-height:360px}.skill-analysis-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.sports-hero-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.sports-hero-actions button{width:100%;min-width:0;padding:0 8px!important;font-size:8px}.sport-goal-card{padding:19px 17px}.sport-goal-score strong{font-size:40px}.skill-progress-meta{flex-direction:column;gap:5px}.exercise-library{padding:19px 14px}.exercise-library-head{display:block}.exercise-library-head button{width:100%;margin-top:16px}.exercise-toolbar{grid-template-columns:1fr}.exercise-toolbar label:first-child{grid-column:auto}.exercise-grid{grid-template-columns:1fr}.exercise-gif-wrap{height:250px}.exercise-detail-shell{padding:20px 14px}.exercise-detail-media{min-height:300px}.exercise-detail-copy h2{font-size:27px}.skill-analysis-hero{grid-template-columns:1fr;text-align:center}.skill-score-ring{margin:auto}.skill-analysis-grid,.technique-result-grid{grid-template-columns:1fr}.skill-dimensions>div{grid-template-columns:76px 1fr 28px}.technique-preview{grid-template-columns:repeat(3,1fr)}}
+
+.content-pagination{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:18px 0 4px;padding:15px 2px 0;border-top:1px solid var(--line)}
+.pagination-summary strong,.pagination-summary span{display:block}.pagination-summary strong{font-size:12px;color:#dfe6e1}.pagination-summary span{margin-top:5px;font:700 8px var(--mono);letter-spacing:.7px;color:#6f7973}
+.pagination-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}.pagination-actions button{min-width:34px;height:34px;padding:0 9px;border:1px solid #2d3632;border-radius:7px;background:#111513;color:#8f9a94;font:700 9px var(--mono);cursor:pointer}.pagination-actions button:hover,.pagination-actions button.active{border-color:#4bd9ff;color:#b9f4ff;background:rgba(75,217,255,.08)}.pagination-actions button:disabled{opacity:.3;cursor:not-allowed}.pagination-gap{color:#59645e;padding:0 2px}
+.sport-score-guardrail{margin:18px 0;padding:14px 16px;border:1px solid rgba(255,181,71,.28);border-radius:9px;background:rgba(255,181,71,.045)}.sport-score-guardrail span{font:700 8px var(--mono);letter-spacing:1.4px;color:#ffbd61}.sport-score-guardrail p{margin:7px 0 0;font-size:11px;line-height:1.7;color:#b7aea0}
+.sport-action-section ol{list-style:none;counter-reset:sport-action;padding:0!important;display:grid;gap:9px}.sport-action-section li{counter-increment:sport-action;display:grid;grid-template-columns:25px 1fr;gap:9px;align-items:start;margin:0!important;padding:10px;border:1px solid #293631;border-radius:7px;background:#111714}.sport-action-section li:before{content:counter(sport-action);display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:rgba(75,217,255,.12);color:#74ddf7;font:700 9px var(--mono)}.sport-action-section li b{font-size:11px;line-height:1.7;color:#d6ded9;font-weight:600;overflow-wrap:anywhere}
+@media(max-width:620px){.content-pagination{align-items:stretch;flex-direction:column}.pagination-actions{justify-content:flex-start}.pagination-actions button{min-width:38px;height:38px}}

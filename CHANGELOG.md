@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to Discipline OS are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [Unreleased]
+
+### Planned
+
+- Continue improving mobile usability, analytics, and evidence-based AI coaching.
+
+## [1.0.0] - 2026-07-14
+
+### Added
+
+- Daily RM0 battle dashboard and streak progression.
+- Multi-transaction daily spending with past-date backfills.
+- Battle history filters, transaction analytics, and item-level AI reviews.
+- Reward vault, expanding mystery drops, earned reward archive, and AI reward advisor.
+- Impulse capture and resisted-purchase tracking.
+- Sports session logging, exercise library, skill progression, and technique review.
+- Habit tracking, grace passes, recovery, rewards, penalties, and AI assessment.
+- Independent savings ledger with recurring cash flow, forecasts, targets, and AI insights.
+- Reversible battle-expense synchronization center with pending, approved, and declined lists.
+- Supabase authentication and cross-device state synchronization.
+- Bilingual interface, customizable themes, and installable PWA support.
+
+### Changed
+
+- Earned mystery-drop rewards now require a concrete item before AI assessment.
+- AI evaluates in-budget earned rewards by their actual usefulness instead of treating them as ordinary impulse spending.
+- Battle records now support unlimited itemized expenses per day without overwriting previous transactions.
+
+### Deployed
+
+- Production application: https://discipline-os-beige.vercel.app

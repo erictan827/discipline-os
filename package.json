@@ -1,0 +1,39 @@
+{
+  "name": "discipline-os-zero",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A gamified personal operating system for daily discipline, spending, habits, sports progression, earned rewards, and savings.",
+  "homepage": "https://discipline-os-beige.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erictan827/discipline-os.git"
+  },
+  "bugs": {
+    "url": "https://github.com/erictan827/discipline-os/issues"
+  },
+  "keywords": [
+    "discipline",
+    "habit-tracker",
+    "expense-tracker",
+    "savings",
+    "sports-tracker",
+    "gamification",
+    "pwa",
+    "supabase",
+    "ai-coach"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "start": "node server.js"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.0",
+    "vercel": "^54.21.1"
+  }
+}

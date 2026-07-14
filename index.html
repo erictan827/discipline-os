@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090a09" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Discipline OS" />
+    <title>Discipline OS — Zero</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon-192.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/language.css" />
+    <link rel="stylesheet" href="/src/arena.css" />
+    <link rel="stylesheet" href="/src/effects.css" />
+    <link rel="stylesheet" href="/src/power.css" />
+    <link rel="stylesheet" href="/src/loot.css" />
+    <link rel="stylesheet" href="/src/drop-claim.css" />
+    <link rel="stylesheet" href="/src/optimizer.css" />
+    <link rel="stylesheet" href="/src/recovery.css" />
+    <link rel="stylesheet" href="/src/impact.css" />
+    <link rel="stylesheet" href="/src/ai-sports.css" />
+    <link rel="stylesheet" href="/src/ops.css" />
+    <link rel="stylesheet" href="/src/theme-controls.css" />
+    <link rel="stylesheet" href="/src/savings.css" />
+    <link rel="stylesheet" href="/src/topbar.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="Discipline OS home">
+          <span class="brand-mark"><i></i><i></i><i></i></span>
+          <span>DISCIPLINE <b>OS</b></span>
+        </a>
+
+        <nav>
+          <button class="nav-item active" data-view="command"><span class="nav-icon">⌁</span> Command</button>
+          <button class="nav-item" data-view="history"><span class="nav-icon">◫</span> History</button>
+          <button class="nav-item" data-view="loot"><span class="nav-icon">◆</span> 战利品库</button>
+          <button class="nav-item" data-view="sports"><span class="nav-icon">◉</span> 运动</button>
+          <button class="nav-item" data-view="habits"><span class="nav-icon">▤</span> 习惯打卡</button>
+          <button class="nav-item" data-view="savings"><span class="nav-icon">◒</span> 存钱账本</button>
+          <button class="nav-item" data-view="manager"><span class="nav-icon">▣</span> 数据管理</button>
+          <button class="nav-item" data-view="protocol"><span class="nav-icon">◇</span> Protocol</button>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div class="level-mini">
+            <div class="mini-row"><span>LEVEL <b id="sideLevel">01</b></span><span id="sideXp">0 / 500 XP</span></div>
+            <div class="xp-track"><span id="sideXpBar"></span></div>
+          </div>
+          <button class="nav-item" id="settingsBtn"><span class="nav-icon">⚙</span> Settings</button>
+          <div class="local-pill"><span></span> DATA STORED LOCALLY</div>
+        </div>
+      </aside>
+
+      <main>
+        <header>
+          <div>
+            <p class="eyebrow" id="dateEyebrow">SUNDAY · 05 JULY</p>
+            <h1 id="greeting">Good evening, Eric.</h1>
+          </div>
+          <div class="control-deck">
+            <button class="deck-menu" id="sidebarToggleBtn" type="button" title="切换菜单" aria-label="切换菜单" aria-expanded="true"><span class="menu-lines" aria-hidden="true"><i></i><i></i><i></i></span></button>
+            <button class="deck-undo" id="undoHeaderBtn" disabled title="撤销上一步">↶ <span>撤销</span><b id="undoCount">0</b></button>
+            <button class="deck-language" id="languageBtn" title="切换语言"><span>EN</span></button>
+            <button class="deck-account" id="syncBtn" title="登入或注册"><i class="account-avatar" aria-hidden="true">E</i><span class="account-copy"><b>登入 / 注册</b><small>同步你的进度</small></span><em aria-hidden="true">›</em></button>
+            <div class="status-chip" hidden><span></span> SYSTEM ONLINE</div>
+            <button class="deck-export" id="exportBtn" title="Export your data">⇩</button>
+          </div>
+        </header>
+
+        <section id="commandView" class="view active-view">
+          <section class="battle-intro">
+            <div class="battle-copy">
+              <span class="battle-code" id="battleCode">DAY 001 · ZERO SPEND WAR</span>
+              <h2 id="battleTitle">今天，敢不敢让 RM0 活到午夜？</h2>
+              <p id="battleSubtitle">你的敌人不是贫穷，是那个想立刻得到快感的自己。</p>
+              <div class="war-cry"><i></i><strong id="warCry">今天不用完美，不要破功就好。</strong></div>
+            </div>
+            <div class="midnight-box">
+              <span id="countdownLabel">距离今日胜负揭晓</span>
+              <strong id="midnightCountdown">00:00:00</strong>
+              <em id="countdownStatus">守住，别让冲动拿走今天。</em>
+            </div>
+          </section>
+          <div class="record-ribbon">
+            <div><span id="ribbonCurrentLabel">当前连胜</span><strong><b id="ribbonCurrent">0</b> <small id="ribbonDayUnit">天</small></strong></div>
+            <div><span id="ribbonBestLabel">历史最强</span><strong><b id="ribbonBest">0</b> <small>PB</small></strong></div>
+            <div class="goat-progress"><span id="goatLabel">GOAT 征途</span><strong><b id="goatRemaining">100</b> <small id="goatRemainingLabel">天后封神</small></strong><i><u id="goatBar"></u></i></div>
+            <div class="identity-line"><span id="identityLabel">今日身份</span><strong id="identityValue">挑战者</strong></div>
+          </div>
+          <div class="pressure-line"><span id="pressureText">DISCIPLINE PRESSURE</span><i><u></u></i><b id="pressureValue">MAX</b></div>
+          <div class="dashboard-grid">
+            <article class="hero-card panel">
+              <div class="hero-top">
+                <span class="section-label" id="missionLabel"><i></i> TODAY'S MISSION</span>
+                <span class="live-label" id="liveLabel">● LIVE</span>
+              </div>
+              <div class="hero-center">
+                <div class="zero-orbit" id="zeroOrbit">
+                  <div class="orbit-ticks"></div>
+                  <div class="zero-content">
+                    <span id="todaySpendLabel">SPENT TODAY</span>
+                    <strong><sup>RM</sup><b id="todaySpend">0</b><small id="todayCents">.00</small></strong>
+                    <em id="todayState">UNBROKEN</em>
+                  </div>
+                </div>
+                <p class="mission-copy" id="missionCopy">Your money has survived another day.<br>Finish strong.</p>
+              </div>
+              <div class="hero-actions">
+                <button class="primary-btn" id="survivedBtn"><span>✓</span> I SURVIVED TODAY</button>
+                <button class="ghost-btn" id="spentBtn">I spent money <span>→</span></button>
+                <button class="ghost-btn" id="dashboardAddSportBtn">＋ 记录一场运动</button>
+              </div>
+              <div class="lock-hint" id="lockHint">按下，就是把今天写进战绩。</div>
+              <div class="day-ai-strip" id="dayAiStrip" hidden>
+                <div>
+                  <span id="dayAiLabel">TODAY'S AI JUDGE</span>
+                  <strong id="dayAiVerdict">今天总结</strong>
+                  <p id="dayAiSummary">AI 会在你记录完当天后，给你一段够直接的总结。</p>
+                </div>
+                <button class="ghost-btn compact-btn" id="dayAiOpenBtn">看 AI 评语</button>
+              </div>
+              <div class="victory-overlay" id="victoryOverlay">
+                <div class="victory-mark">WIN</div>
+                <h2 id="victoryTitle">今天，你赢了自己。</h2>
+                <p id="victoryCopy">连续纪录 +1 · XP +100</p>
+              </div>
+            </article>
+
+            <div class="right-stack">
+              <article class="streak-card panel">
+                <div class="card-head"><span class="section-label" id="currentStreakLabel"><i></i> CURRENT STREAK</span><span class="flame">↟</span></div>
+                <div class="streak-number"><strong id="currentStreak">0</strong><span id="streakUnitLabel">DAYS<br>UNBROKEN</span></div>
+                <div class="best-row"><span id="personalBestLabel">PERSONAL BEST</span><b><span id="bestStreak">0</span> <span id="bestStreakUnit">DAYS</span></b></div>
+                <div class="streak-track"><span id="streakBar"></span><i id="streakTarget">NEXT: 3</i></div>
+              </article>
+
+              <article class="saved-card panel">
+                <div class="card-head"><span class="section-label" id="moneyDefendedLabel"><i></i> MONEY DEFENDED</span><span class="shield">♢</span></div>
+                <div class="saved-total"><sup>RM</sup><strong id="moneySaved">0</strong><small id="savedCents">.00</small></div>
+                <p id="moneySavedHint">Estimated from your daily target</p>
+                <div class="saved-change"><span id="thisMonthLabel">THIS MONTH</span><b id="monthSaved">+ RM 0</b></div>
+              </article>
+            </div>
+          </div>
+
+          <section class="impact-engine panel" style="margin-top:17px">
+            <div class="impact-total">
+              <span>到目前为止，你已经帮自己守住</span>
+              <strong><sup>RM</sup><b id="totalImpact">0</b><small id="totalImpactCents">.00</small></strong>
+              <p id="impactMeaning">每一次没乱花，都有算进去。</p>
+            </div>
+            <div class="impact-milestone">
+              <div class="impact-head"><span id="impactLevel">第一个 RM100</span><b id="impactPercent">0%</b></div>
+              <div class="impact-track"><i id="impactBar"></i><u></u></div>
+              <div class="impact-foot"><span id="impactRemaining">还差 RM100.00</span><b id="impactPush">先拿下第一天。</b></div>
+              <div class="achievement-dots" id="achievementDots"></div>
+            </div>
+            <div class="impact-metrics">
+              <div><span>RM0 日守住</span><strong id="impactZero">RM 0.00</strong></div>
+              <div><span>挡掉冲动</span><strong id="impactIntercepted">RM 0.00</strong></div>
+              <div><span>目前胜率</span><strong id="impactWinRate">0%</strong></div>
+              <div><span>照这样30天</span><strong id="impactProjection">RM 0.00</strong></div>
+            </div>
+          </section>
+          <section class="impact-feed-wrap panel">
+            <div class="impact-feed-title"><div><span id="liveProgressLabel">LIVE PROGRESS</span><h3>你做过的，都没有白费。</h3></div><b id="impactActionCount">0 个有效行动</b></div>
+            <div class="impact-feed" id="impactFeed"></div>
+          </section>
+
+          <div class="bottom-grid">
+            <article class="calendar-card panel">
+              <div class="calendar-title">
+                <div><span class="section-label" id="battleLogLabel"><i></i> BATTLE LOG</span><h2 id="monthTitle">July 2026</h2></div>
+                <div class="calendar-controls"><button id="prevMonth">←</button><button id="todayMonth">TODAY</button><button id="nextMonth">→</button></div>
+              </div>
+              <div class="calendar-week" id="calendarWeek"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
+              <div class="calendar-days" id="calendarDays"></div>
+              <div class="legend"><span id="legendWin"><i class="win"></i> ZERO SPEND</span><span id="legendSpent"><i class="spent"></i> SPENT</span><span id="legendPending"><i class="pending"></i> NO RECORD</span></div>
+            </article>
+
+            <article class="rank-card panel">
+              <div class="rank-glow"></div>
+              <span class="section-label" id="saverRankLabel"><i></i> SAVER RANK</span>
+              <div class="rank-badge"><span>◇</span></div>
+              <h2 id="rankName">INITIATE</h2>
+              <p id="rankCopy">The first decision changes everything.</p>
+              <div class="rank-progress"><div><span id="rankProgressText">0 / 3 DAYS</span><b id="rankPercent">0%</b></div><div class="xp-track"><span id="rankBar"></span></div></div>
+            </article>
+          </div>
+
+          <blockquote>“Discipline is choosing between what you want now and what you want most.”<span>— ABRAHAM LINCOLN</span></blockquote>
+        </section>
+
+        <section id="historyView" class="view">
+          <div class="page-heading page-heading-actions"><div><span class="section-label"><i></i> COMPLETE ARCHIVE</span><h2>Your battle history.</h2><p>Every decision, stored only on this Mac.</p></div><div class="page-actions"><button class="primary-btn compact-btn" id="addRecordBtn">＋ 补一笔记录</button><button class="ghost-btn compact-btn" id="openManagerBtn">打开数据管理</button></div></div>
+          <div class="history-filters panel">
+            <div class="history-filter-row">
+              <div>
+                <span class="section-label"><i></i> SPEND ANALYTICS</span>
+                <h3 id="historyRangeLabel">本月</h3>
+              </div>
+              <div class="history-filter-actions">
+                <button class="manager-tab" data-history-mode="day">今天</button>
+                <button class="manager-tab active" data-history-mode="month">月</button>
+                <button class="manager-tab" data-history-mode="year">年</button>
+                <button class="manager-tab" data-history-mode="range">区间</button>
+              </div>
+            </div>
+            <div class="history-range-inputs">
+              <input id="historyStartInput" type="date" />
+              <input id="historyEndInput" type="date" />
+            </div>
+            <div class="history-summary-grid" id="historySummary"></div>
+          </div>
+          <div class="history-layout"><div class="panel history-panel"><div class="history-head"><span>DATE</span><span>RESULT</span><span>SPENT</span><span>REASON</span><span>操作</span></div><div id="historyList"></div></div></div>
+        </section>
+
+        <section id="lootView" class="view">
+          <div class="loot-hero">
+            <div>
+              <span class="loot-kicker">REWARD VAULT · 战利品库</span>
+              <h2 id="lootTitle">想买可以，先赢回来。</h2>
+              <p id="lootSubtitle">不是不准你爽。是要你爽得有资格、爽得没内疚。</p>
+            </div>
+            <button class="primary-btn add-loot-btn" id="addLootBtn">＋ 放一个想要的东西</button>
+          </div>
+
+          <div class="vault-stats">
+            <article class="vault-balance panel"><span>现在可以爽的钱</span><strong><sup>RM</sup><b id="rewardBalance">0.00</b></strong><p id="rewardBalanceCopy">累计赚入 RM0.00 · 已使用 RM0.00</p><i><u id="rewardBalanceBar"></u></i></article>
+            <article class="vault-stat panel"><span>纪律币</span><strong id="disciplineCoins">0</strong><p>RM0 一天 = 1 枚。这个不能买，只能赢。</p></article>
+            <article class="vault-stat panel"><span>挡掉的冲动</span><strong id="urgeKills">0</strong><p>只有经过冷静期、真的没买，才算一次。</p><button id="addImpulseBtn">＋ 现在很想买东西</button></article>
+            <article class="vault-stat panel"><span>真正留下的钱</span><strong><sup>RM</sup><b id="futureFund">0.00</b></strong><p>90% 锁进未来，不准拿来乱花。</p></article>
+          </div>
+
+          <div class="vault-rule panel">
+            <span>你的奖励算法</span>
+            <div><b>RM0 胜利</b><i>→</i><b>90% 留给未来</b><i>→</i><strong>10% 爽钱</strong><i>→</i><b>冷静 24 小时</b><i>→</i><strong>领取战利品</strong></div>
+          </div>
+
+          <section class="drop-zone panel">
+            <div class="drop-zone-head">
+              <div>
+                <span>UNKNOWN REWARD DROPS</span>
+                <h3>未知掉落箱</h3>
+                <p>不是先决定要买什么。是你先赢，系统才让更高段位的奖励现身。</p>
+              </div>
+              <div class="drop-zone-bank">
+                <span>真实守住的钱</span>
+                <strong><sup>RM</sup><b id="dropSavedMoney">0.00</b></strong>
+              </div>
+            </div>
+            <div class="drop-strip" id="dropStrip"></div>
+            <div class="content-pagination" id="dropPagination" aria-label="未知掉落箱分页"></div>
+          </section>
+
+          <section class="interceptor panel">
+            <div class="interceptor-head">
+              <div><span>24H IMPULSE INTERCEPTOR</span><h3>冲动拦截器</h3><p>先不要下单。丢进来，24 小时后再决定。</p></div>
+              <div class="intercept-saved"><span>目前挡掉</span><strong><sup>RM</sup><b id="interceptedAmount">0.00</b></strong></div>
+            </div>
+            <div class="impulse-list" id="impulseList"></div>
+          </section>
+
+          <div class="loot-section-head"><div><span>YOUR TARGETS</span><h3>你正在赢回来的东西</h3></div><p id="lootCount">0 个目标</p></div>
+          <div class="loot-grid" id="lootGrid"></div>
+          <div class="loot-section-head loot-archive-head" id="lootArchiveHead" hidden><div><span>WON BACK</span><h3>你已经赢回来的东西</h3></div><p id="lootArchiveCount">0 个已拿下</p></div>
+          <div class="loot-grid loot-archive-grid" id="lootArchiveGrid" hidden></div>
+        </section>
+
+        <section id="savingsView" class="view">
+          <div class="savings-hero"><div><span>SAVINGS LEDGER · 独立现金流</span><h2>最后，真正存下多少。</h2><p>收入和固定花费只在这里加减，不影响战绩、战利品、奖励或任何现有算法。</p></div><div class="savings-hero-actions"><button class="ghost-btn" id="battleSyncBtn">⇄ 战绩消费 <b id="battleSyncCount">0 笔待同步</b></button><button class="primary-btn" id="addSavingEntryBtn">＋ 加一笔</button></div></div>
+          <section class="savings-total panel"><div><span>全系统累计净存款</span><p>所有收入减去所有花费后，真正留下的钱</p></div><strong><sup>RM</sup><b id="savingsAllTime">0.00</b></strong><button class="ghost-btn compact-btn" id="analyzeSavingsBtn">✦ AI 分析全部存款</button></section>
+          <section class="savings-insight-grid"><article class="panel savings-projection"><span>下月现金流预测</span><h3>下个月预计可存</h3><strong id="savingsProjection">RM 0.00</strong><p id="savingsProjectionCopy">记录收入和固定项目后，这里会越来越准。</p></article><article class="panel savings-goal-summary"><span>储蓄目标</span><h3 id="savingsGoalTitle">还没设储蓄目标</h3><strong id="savingsGoalProgress">0%</strong><div class="savings-goal-track"><i id="savingsGoalBar"></i></div><button id="setSavingsGoalBtn">设置目标与神秘奖励箱</button></article></section>
+          <section class="savings-box-zone panel"><div class="savings-section-head"><div><span>AI 神秘奖励</span><h3>储蓄神秘箱</h3><p>达到目标才可以开。奖励内容由 AI 按你的状态决定，开箱前不会告诉你。</p></div></div><div id="savingsRewardBox"></div></section>
+          <section class="savings-filter panel"><div class="savings-filter-head"><div><span>VIEW RANGE</span><h3 id="savingsRangeLabel">本月</h3></div><div class="savings-modes"><button data-savings-mode="day">今天</button><button class="active" data-savings-mode="month">月</button><button data-savings-mode="year">年</button><button data-savings-mode="range">区间</button><button data-savings-mode="all">全部</button></div></div><div class="savings-date-controls"><input id="savingsStartInput" type="date" /><span>至</span><input id="savingsEndInput" type="date" /></div></section>
+          <div class="savings-summary"><article class="panel income"><span>范围收入</span><strong id="savingsIncome">RM 0.00</strong></article><article class="panel expense"><span>范围花费</span><strong id="savingsExpense">RM 0.00</strong></article><article class="panel net"><span>范围净存</span><strong id="savingsNet">RM 0.00</strong></article><article class="panel"><span>记录笔数</span><strong id="savingsCount">0</strong></article></div>
+          <section class="savings-ledger panel"><div class="savings-list-head"><span>日期</span><span>项目</span><span>类型</span><span>金额</span><span>操作</span></div><div id="savingsList"></div></section>
+          <section class="savings-recurring panel"><div class="savings-section-head"><div><span>每月固定现金流</span><h3>固定收支／订阅</h3><p>薪水、房租、保险、会员或固定存款；到日期会自动写进账本。</p></div><button class="primary-btn compact-btn" id="addRecurringBtn">＋ 设置固定项目</button></div><div id="recurringList"></div></section>
+        </section>
+
+        <section id="protocolView" class="view">
+          <div class="page-heading"><span class="section-label"><i></i> 纪律规矩</span><h2>你的零消费规矩。</h2><p>简单到能执行，够硬才能改变你。</p></div>
+          <div class="protocol-grid">
+            <article class="panel rule-card"><b>01</b><h3>Protect the zero.</h3><p>Every day begins at RM0. Keep it there until sleep. Necessary bills should be planned, never impulsive.</p></article>
+            <article class="panel rule-card"><b>02</b><h3>Record the truth.</h3><p>If money leaves, log it immediately. No shame, no creative accounting—only useful data.</p></article>
+            <article class="panel rule-card"><b>03</b><h3>Never miss twice.</h3><p>A broken day is information. The next day is your counterattack. Reset fast and continue.</p></article>
+          </div>
+        </section>
+
+        <section id="sportsView" class="view">
+          <div class="sports-hero"><div><span>SPORTS · SKILL PROGRESSION</span><h2>每一项运动，都看得见自己变强。</h2><p>从游泳、篮球到跑步与健身：AI 用训练证据校准 0–100 掌握度，并告诉你下一步练什么。</p></div><div class="sports-hero-actions"><button class="ghost-btn" id="addSportSkillBtn">＋ 新运动</button><button class="primary-btn" id="addSportBtn">＋ 记录训练</button></div></div>
+          <div class="sports-stats"><article class="panel"><span>这个月运动</span><strong id="sportSessions">0 场</strong></article><article class="panel"><span>这个月投入</span><strong id="sportSpend">RM 0.00</strong></article><article class="panel"><span>平均每小时</span><strong id="sportHourly">RM 0.00</strong></article><article class="panel"><span>运动时间</span><strong id="sportHours">0 小时</strong></article></div>
+          <div class="sport-value panel"><div><span>运动投资判断</span><h3 id="sportVerdict">先记录第一场，系统才知道值不值。</h3></div><div class="sport-budget"><span>本月运动预算</span><strong id="sportBudgetProgress">RM 0 / RM 200</strong><i><u id="sportBudgetBar"></u></i></div></div>
+          <div class="sport-list-head sport-progress-head"><div><span>MY SPORTS</span><h3>运动技能进度</h3></div><span>100 = 达到你为该项目设定的完整掌握目标，不靠打卡次数硬灌分。</span></div>
+          <div class="sport-goal-grid" id="sportGoalGrid"></div>
+          <section class="exercise-library panel">
+            <div class="exercise-library-head"><div><span>EXERCISEDB · 1,500+ MOVEMENTS</span><h3>健身动作大全</h3><p>动作 GIF、目标肌群、器械、辅助肌群与分步教学。点进动作可放大看。</p></div><button class="ghost-btn compact-btn" id="techniqueCheckBtn">◎ 拍动作让 AI 评分</button></div>
+            <div class="exercise-toolbar"><label><span>搜索动作</span><input id="exerciseSearchInput" type="search" placeholder="bench press、squat、pull up…" /></label><label><span>身体部位</span><select id="exerciseBodyPartFilter"><option value="">全部部位</option></select></label><label><span>器械</span><select id="exerciseEquipmentFilter"><option value="">全部器械</option></select></label><button class="primary-btn compact-btn" id="exerciseSearchBtn">搜索</button></div>
+            <div class="exercise-state" id="exerciseState">动作库准备中…</div>
+            <div class="exercise-grid" id="exerciseGrid"></div>
+            <div class="exercise-pagination"><button class="ghost-btn compact-btn" id="exercisePrevBtn" disabled>← 上一页</button><span id="exercisePageLabel">第 1 页</span><button class="ghost-btn compact-btn" id="exerciseNextBtn" disabled>下一页 →</button></div>
+            <small class="exercise-credit">Exercise data &amp; GIF media powered by ExerciseDB / AscendAPI. 免费接口仅适用于个人、原型与非商业用途。</small>
+          </section>
+          <div class="sports-stats sport-skill-grid" id="sportSkillGrid"></div>
+          <div class="sport-list-head"><h3>最近训练</h3><span>训练内容会成为技能进度的证据；费用仍与冲动消费分开判断。</span></div><div class="sport-list" id="sportList"></div><div class="content-pagination" id="sportPagination" aria-label="最近训练分页"></div>
+        </section>
+
+        <section id="habitsView" class="view">
+          <div class="sports-hero">
+            <div>
+              <span>HABIT WAR ROOM</span>
+              <h2>每日打卡，不准假进步。</h2>
+              <p>这里不是记可爱习惯。是把你想变成的那种人，天天硬刷出来。</p>
+            </div>
+            <button class="primary-btn" id="addHabitBtn">＋ 新增习惯</button>
+          </div>
+          <div class="sports-stats">
+            <article class="panel"><span>习惯总数</span><strong id="habitCount">0</strong></article>
+            <article class="panel"><span>今天完成</span><strong id="habitTodayDone">0/1</strong></article>
+            <article class="panel"><span>累计完成值</span><strong id="habitCompletionScore">0</strong></article>
+            <article class="panel"><span>惩罚箱等级</span><strong id="habitPenaltyLevel">无</strong></article>
+          </div>
+          <div class="sports-stats">
+            <article class="panel"><span>习惯身份</span><strong id="habitRank">起步中</strong></article>
+            <article class="panel"><span>危险值</span><strong id="habitDangerScore">0</strong></article>
+          </div>
+          <div class="sport-value panel">
+            <div><span>AI 惩罚箱状态</span><h3 id="habitPenaltyCopy">今天没有惩罚在追杀你。继续守。</h3></div>
+            <div class="sport-budget"><span>奖励系统</span><strong>统一奖励库存</strong><i><u style="width:100%"></u></i></div>
+          </div>
+          <section class="habit-safety panel">
+            <article><span>每周宽限券</span><strong id="habitGraceCount">1 张</strong><p>用于“做了但忘记记”或真正需要喘气的一天；记录保留，但免除惩罚。</p></article>
+            <article><span>恢复模式</span><strong id="habitRecoveryState">稳定模式</strong><p id="habitRecoveryCopy">连续失守两天会自动进入 3 天恢复期，不再越罚越重。</p></article>
+            <article><span>统一奖励库存</span><strong id="habitRewardInventory">0 个可用</strong><p>所有习惯掉落统一放到下方库存，并明确显示“可使用 / 已使用”。</p></article>
+          </section>
+          <section class="drop-zone panel">
+            <div class="drop-zone-head">
+              <div>
+                <span>HABIT REWARD DROPS</span>
+                <h3>习惯未知奖励箱</h3>
+                <p>不是做一次给一次，是你越稳定，系统才越肯给你高级奖励。</p>
+              </div>
+            </div>
+            <div class="drop-strip" id="habitDropStrip"></div>
+          </section>
+          <section class="interceptor panel">
+            <div class="interceptor-head">
+              <div><span>AI PUNISHMENT BOX</span><h3>惩罚箱</h3><p>不是吓你，是让你真的讨厌连续摆烂。</p></div>
+            </div>
+            <div class="habit-list" id="habitPenaltyList"></div>
+          </section>
+          <section class="history-filters panel habit-report-shell">
+            <div class="history-filter-row">
+              <div>
+                <span class="section-label"><i></i> HABIT REPORT</span>
+                <h3 id="habitReportRangeLabel">本月习惯战报</h3>
+              </div>
+              <div class="history-filter-actions">
+                <button class="manager-tab" data-habit-report-mode="day">今天</button>
+                <button class="manager-tab active" data-habit-report-mode="month">月</button>
+                <button class="manager-tab" data-habit-report-mode="year">年</button>
+                <button class="manager-tab" data-habit-report-mode="range">区间</button>
+              </div>
+            </div>
+            <div class="history-range-inputs">
+              <input id="habitReportStartInput" type="date" />
+              <input id="habitReportEndInput" type="date" />
+            </div>
+            <div class="history-summary-grid" id="habitReportSummary"></div>
+            <div class="panel history-panel habit-report-table">
+              <div class="history-head habit-report-head">
+                <span>习惯</span>
+                <span>完成 / 机会</span>
+                <span>完成率</span>
+                <span>表现</span>
+                <span>风险</span>
+              </div>
+              <div id="habitReportList"></div>
+            </div>
+          </section>
+          <div class="sport-list-head"><h3>今日习惯战区</h3><span>完成就加成，连续没做就开惩罚箱。</span></div>
+          <div class="habit-list" id="habitList"></div>
+          <div class="sport-list-head"><h3>你赢回来的习惯奖励</h3><span>这些不是系统送的，是你刷出来的。</span></div>
+          <div class="loot-grid" id="habitPerkList"></div>
+        </section>
+
+        <section id="managerView" class="view">
+          <div class="manager-hero">
+            <div>
+              <span>DATA CONTROL CENTER</span>
+              <h2>全部资料，集中改。</h2>
+              <p>前几天漏记、战利品改价、删掉旧冲动、补运动记录，都在这里一次做完。</p>
+            </div>
+            <button class="primary-btn compact-btn" id="managerAddBtn">＋ 新增资料</button>
+          </div>
+          <div class="manager-toolbar panel">
+            <button class="manager-tab active" data-manager-section="records">每日战绩</button>
+            <button class="manager-tab" data-manager-section="rewards">战利品</button>
+            <button class="manager-tab" data-manager-section="impulses">冲动记录</button>
+            <button class="manager-tab" data-manager-section="sports">运动记录</button>
+          </div>
+          <div class="manager-summary" id="managerSummary"></div>
+          <div class="manager-shell panel">
+            <div class="manager-head" id="managerHead"></div>
+            <div class="manager-list" id="managerList"></div>
+            <div class="manager-pagination">
+              <button class="ghost-btn compact-btn" id="managerPrevBtn">← 上一页</button>
+              <strong id="managerPageLabel">第 1 页</strong>
+              <button class="ghost-btn compact-btn" id="managerNextBtn">下一页 →</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="spendDialog">
+      <form method="dialog" id="spendForm">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker">LOG A TRANSACTION</span>
+        <h2>What broke the zero?</h2>
+        <p>Record it honestly. Data beats guilt.</p>
+        <input id="spendRecordKeyInput" type="hidden" />
+        <input id="spendTransactionIdInput" type="hidden" />
+        <label>AMOUNT</label>
+        <div class="amount-input"><span>RM</span><input id="amountInput" type="number" min="0.01" step="0.01" placeholder="0.00" required /></div>
+        <label>REASON</label>
+        <input id="reasonInput" type="text" maxlength="60" placeholder="Coffee, transport, lunch..." required />
+        <label>TYPE</label>
+        <div class="type-options"><label><input type="radio" name="spendType" value="impulse" checked><span>IMPULSE</span></label><label><input type="radio" name="spendType" value="essential"><span>ESSENTIAL</span></label></div>
+        <button class="danger-btn" value="default" type="submit">RECORD SPEND</button>
+      </form>
+    </dialog>
+
+    <dialog id="settingsDialog">
+      <form method="dialog" id="settingsForm">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker">系统设置</span><h2>调整你的系统。</h2><p>这里只会改变估算方式，不会动到你的记录。</p>
+        <label>你的名字</label><input id="nameInput" type="text" maxlength="30" placeholder="Eric" />
+        <label>每日储蓄目标</label><div class="amount-input"><span>RM</span><input id="targetInput" type="number" min="1" step="1" /></div>
+        <div class="theme-section">
+          <div class="theme-section-head">
+            <strong>整体主题</strong>
+            <small>切换模式后，你还可以自己细调颜色。</small>
+          </div>
+          <div class="form-columns theme-mode-row">
+            <div>
+              <label>主题模式</label>
+              <select id="themeModeInput">
+                <option value="dark">深色模式</option><option value="light">浅色模式</option>
+              </select>
+            </div>
+            <div class="theme-reset-wrap">
+              <label>&nbsp;</label>
+              <button class="ghost-btn compact-btn theme-reset-btn" id="themePresetBtn" type="button">套用这个模式预设色</button>
+            </div>
+          </div>
+          <div class="theme-grid">
+            <label><span>主色</span><input id="themeAccentInput" type="color" /></label>
+            <label><span>副色</span><input id="themeAccent2Input" type="color" /></label>
+            <label><span>背景</span><input id="themeBgInput" type="color" /></label>
+            <label><span>面板</span><input id="themePanelInput" type="color" /></label>
+            <label><span>文字</span><input id="themeTextInput" type="color" /></label>
+            <label><span>警告/删除</span><input id="themeDangerInput" type="color" /></label>
+          </div>
+        </div>
+        <button class="primary-btn full-btn" value="default" type="submit">保存设置</button>
+        <button class="reset-btn" id="resetBtn" value="cancel" type="button">清除全部本机资料</button>
+      </form>
+    </dialog>
+
+    <dialog id="savingDialog"><form method="dialog" id="savingForm"><button class="close-btn" type="button" aria-label="Close">×</button><span class="modal-kicker">SAVINGS LEDGER</span><h2 id="savingDialogTitle">加一笔现金流</h2><p>这笔只进入存钱账本，不会改变其他页面。</p><input id="savingEditId" type="hidden" /><label>日期</label><input id="savingDateInput" type="date" required /><label>类型</label><div class="type-options"><label><input type="radio" name="savingType" value="income" checked><span>＋ 收入</span></label><label><input type="radio" name="savingType" value="expense"><span>－ 花费</span></label></div><label>项目</label><input id="savingTitleInput" type="text" maxlength="80" placeholder="薪水、房租、保险、吃饭……" required /><label>金额</label><div class="amount-input"><span>RM</span><input id="savingAmountInput" type="number" min="0.01" step="0.01" required /></div><label>备注（可不填）</label><input id="savingNoteInput" type="text" maxlength="120" placeholder="这笔钱的说明" /><button class="primary-btn full-btn" type="submit" value="default">保存到独立账本</button></form></dialog>
+    <dialog id="battleSyncDialog"><div class="battle-sync-shell"><button class="close-btn" type="button" aria-label="Close">×</button><span class="modal-kicker">BATTLE → SAVINGS LEDGER</span><div class="battle-sync-title"><div><h2>战绩消费同步中心</h2><p>每一笔由你决定。批准才会进入存钱账本，拒绝后也随时能改回来。</p></div><strong id="battleSyncDialogCount">0 笔待同步</strong></div><div id="battleSyncContent"></div></div></dialog>
+
+    <dialog id="recurringDialog"><form method="dialog" id="recurringForm"><button class="close-btn" type="button">×</button><span class="modal-kicker">每月固定现金流</span><h2>设置固定项目</h2><p>系统会在每个月指定日期自动写入账本。</p><input id="recurringEditId" type="hidden" /><label>类型</label><div class="type-options"><label><input type="radio" name="recurringType" value="income" checked><span>＋ 固定收入</span></label><label><input type="radio" name="recurringType" value="expense"><span>－ 固定花费</span></label></div><label>项目</label><input id="recurringTitleInput" type="text" maxlength="80" required placeholder="薪水、房租、Netflix、保险……" /><div class="form-columns"><div><label>每月金额</label><div class="amount-input"><span>RM</span><input id="recurringAmountInput" type="number" min="0.01" step="0.01" required /></div></div><div><label>每月几号</label><input id="recurringDayInput" type="number" min="1" max="31" required /></div></div><label>开始日期</label><input id="recurringStartInput" type="date" required /><button class="primary-btn full-btn" type="submit" value="default">保存固定项目</button></form></dialog>
+    <dialog id="savingsGoalDialog"><form method="dialog" id="savingsGoalForm"><button class="close-btn" type="button">×</button><span class="modal-kicker">储蓄目标</span><h2>设置下一座储蓄里程碑</h2><p>达到金额后解锁神秘箱，奖励到时由 AI 判断。</p><label>目标名称</label><input id="savingsGoalNameInput" type="text" maxlength="60" placeholder="紧急基金、第一万、旅行基金……" required /><label>目标净存款</label><div class="amount-input"><span>RM</span><input id="savingsGoalAmountInput" type="number" min="1" step="1" required /></div><button class="primary-btn full-btn" type="submit" value="default">锁定目标</button></form></dialog>
+    <dialog id="savingsAiDialog"><div class="ai-shell"><button class="close-btn" type="button">×</button><div class="ai-head"><span>AI 存款教练</span><h2 id="savingsAiTitle">存款 AI 分析</h2><p id="savingsAiStatus">正在读取你的现金流……</p></div><div class="ai-analysis" id="savingsAiContent"></div></div></dialog>
+
+    <dialog id="lootDialog">
+      <form method="dialog" id="lootForm">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker">ADD TO REWARD VAULT</span>
+        <h2 id="lootDialogTitle">你想赢什么回来？</h2>
+        <p>资料写清楚，系统才可以帮你排先后。</p>
+        <input id="lootEditId" type="hidden" />
+        <label>战利品</label>
+        <input id="lootNameInput" type="text" maxlength="50" placeholder="一餐好料、跑鞋、新装备……" required />
+        <div class="form-columns"><div><label>需要多少钱</label><div class="amount-input"><span>RM</span><input id="lootCostInput" type="number" min="1" step="0.01" placeholder="0.00" required /></div></div><div><label>优先级</label><select id="lootPriorityInput"><option value="3">非拿不可</option><option value="2" selected>很想要</option><option value="1">有就爽</option></select></div></div>
+        <div class="form-columns"><div><label>属于哪一种</label><select id="lootCategoryInput"><option value="food">吃好料</option><option value="gear">装备</option><option value="experience">体验</option><option value="growth">升级自己</option><option value="other">其他</option></select></div><div><label>图片（可以不放）</label><label class="image-picker"><input id="lootImageInput" type="file" accept="image/*" /><span id="imagePickerText">选择图片</span></label></div></div>
+        <label>为什么你想要它？</label><input id="lootWhyInput" type="text" maxlength="100" placeholder="它会让我跑得更舒服／这是我真的喜欢的……" />
+        <div class="image-preview" id="lootImagePreview"></div>
+        <button class="primary-btn full-btn" id="lootSubmitBtn" value="default" type="submit">放进战利品库</button>
+      </form>
+    </dialog>
+
+    <dialog id="dropClaimDialog">
+      <form method="dialog" id="dropClaimForm">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker">CHOOSE YOUR EARNED REWARD</span>
+        <h2 id="dropClaimTitle">这次你想拿什么？</h2>
+        <p id="dropClaimContext">这不是重新存一次。你已经赢到资格，现在让 AI 判断这个选择适不适合当前阶段。</p>
+        <input id="dropClaimId" type="hidden" />
+        <div class="drop-claim-stage" id="dropClaimStage"></div>
+        <label>你具体想要什么？</label>
+        <input id="dropCandidateName" type="text" maxlength="70" placeholder="例：一双羽球鞋、筋膜枪、游泳课、吃一餐好的……" required />
+        <div class="form-columns">
+          <div><label>实际价格</label><div class="amount-input"><span>RM</span><input id="dropCandidateCost" type="number" min="1" step="0.01" placeholder="0.00" required /></div></div>
+          <div><label>属于哪一种</label><select id="dropCandidateCategory"><option value="food">吃好料</option><option value="gear">装备</option><option value="experience">体验</option><option value="growth">升级自己</option><option value="other">其他</option></select></div>
+        </div>
+        <label>为什么现在想要它？</label>
+        <textarea id="dropCandidateWhy" rows="3" maxlength="220" placeholder="它现在会怎样帮助我？为什么是现在？" required></textarea>
+        <button class="primary-btn full-btn" id="dropAnalyzeBtn" value="default" type="submit">✦ 让 AI 判断现在适不适合</button>
+        <div class="drop-candidate-analysis" id="dropCandidateAnalysis"></div>
+        <button class="ghost-btn full-btn" id="dropConfirmClaimBtn" type="button" disabled>确认领取这个奖励</button>
+      </form>
+    </dialog>
+
+    <dialog id="rewardResolveDialog">
+      <form method="dialog" id="rewardResolveForm">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker">RESOLVE REWARD</span>
+        <h2 id="rewardResolveTitle">这件战利品最后怎样了？</h2>
+        <p id="rewardResolveCopy">不要让它消失。给它一个明确结果。</p>
+        <input id="rewardResolveId" type="hidden" />
+        <div class="type-options reward-resolution-options">
+          <label><input type="radio" name="rewardResolution" value="bought" checked><span>已买到</span></label>
+          <label><input type="radio" name="rewardResolution" value="later"><span>以后再买</span></label>
+          <label><input type="radio" name="rewardResolution" value="dropped"><span>已放弃</span></label>
+        </div>
+        <button class="primary-btn full-btn" id="rewardResolveSubmit" value="default" type="submit">确认结果</button>
+        <button class="reset-btn" id="rewardResolveReset" value="cancel" type="button" hidden>放回进行中</button>
+      </form>
+    </dialog>
+
+    <dialog id="impulseDialog">
+      <form method="dialog" id="impulseForm">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker">STOP. DON'T CHECK OUT YET.</span>
+        <h2>现在手痒想买什么？</h2>
+        <p>写下来就好。你不用现在决定。</p>
+        <input id="impulseEditId" type="hidden" />
+        <label>什么东西</label><input id="impulseNameInput" type="text" maxlength="60" placeholder="Shopee 那个东西、宵夜、衣服……" required />
+        <label>多少钱</label><div class="amount-input"><span>RM</span><input id="impulseCostInput" type="number" min="0.01" step="0.01" placeholder="0.00" required /></div>
+        <label>为什么突然想买</label><select id="impulseTriggerInput"><option value="bored">闲到手痒</option><option value="stress">压力大想爽一下</option><option value="sale">看到折扣怕错过</option><option value="social">看到别人有</option><option value="hungry">嘴馋／肚子饿</option><option value="other">其他</option></select>
+        <button class="danger-btn" id="impulseSubmitBtn" value="default" type="submit">拦下来，开始冷静 24 小时</button>
+      </form>
+    </dialog>
+
+    <dialog id="recordDialog">
+      <form method="dialog" id="recordForm">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker" id="recordDialogKicker">EDIT DAILY RECORD</span>
+        <h2 id="recordDialogTitle">改回正确的记录</h2>
+        <p id="recordEditDate">这一天</p>
+        <input id="recordOriginalKey" type="hidden" />
+        <label>日期</label><input id="recordDateInput" type="date" required />
+        <label>这天算什么</label><select id="recordStatusInput"><option value="win">RM0，赢了</option><option value="spent">有花钱，破功</option></select>
+        <label>这一笔花了多少</label><div class="amount-input"><span>RM</span><input id="recordAmountInput" type="number" min="0" step="0.01" /></div>
+        <label>这一笔买了什么／原因</label><input id="recordReasonInput" type="text" maxlength="80" placeholder="每一笔分开写，系统会自动汇总" />
+        <button class="primary-btn full-btn" id="recordSubmitBtn" value="default" type="submit">保存修改</button>
+        <button class="reset-btn" id="recordDeleteBtn" value="cancel" type="button" hidden>删除这天记录</button>
+      </form>
+    </dialog>
+
+    <dialog id="aiDialog">
+      <div class="ai-shell">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <div class="ai-head"><span>AI REWARD ADVISOR</span><h2 id="aiRewardName">战利品分析</h2><p id="aiStatus">正在了解这个东西值不值得你赢回来…</p></div>
+        <div class="ai-analysis" id="aiAnalysis"></div>
+        <div class="ai-chat" id="aiChat"></div>
+        <form id="aiChatForm"><input id="aiChatInput" type="text" placeholder="继续问：它真的适合我吗？有没有更好的选择？" required /><button type="submit">发送</button></form>
+      </div>
+    </dialog>
+
+    <dialog id="recordAiDialog">
+      <div class="ai-shell">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <div class="ai-head">
+          <span id="recordAiKicker">DAY JUDGE</span>
+          <h2 id="recordAiTitle">当天 AI 评语</h2>
+          <p id="recordAiStatus">这一天的总结会在这里。</p>
+        </div>
+        <div class="ai-analysis" id="recordAiAnalysis"></div>
+      </div>
+    </dialog>
+
+    <dialog id="sportDialog">
+      <form method="dialog" id="sportForm"><button class="close-btn" type="button" aria-label="Close">×</button><span class="modal-kicker">LOG TRAINING EVIDENCE</span><h2>今天具体练了什么？</h2><p>写得越具体，AI 对技能进度的校准越准。</p><input id="sportEditId" type="hidden" /><label>归属运动项目</label><select id="sportSkillInput"><option value="">未建立项目／一般运动</option></select><label>日期</label><input id="sportDateInput" type="date" required /><label>运动／训练名称</label><input id="sportNameInput" type="text" placeholder="游泳换气、篮球投篮、5K 慢跑、胸部训练……" required /><label>训练证据与结果</label><textarea id="sportNoteInput" rows="4" placeholder="例：自由泳 8×25m；前 4 趟能稳定侧换气，后面开始呛水；教练说身体转动太少。最好连续游到 50m。"></textarea><div class="form-columns"><div><label>费用</label><div class="amount-input"><span>RM</span><input id="sportCostInput" type="number" min="0" step="0.01" required /></div></div><div><label>运动多久（分钟）</label><input id="sportMinutesInput" type="number" min="5" step="5" required /></div></div><div class="form-columns"><div><label>这场有多值得？</label><select id="sportValueInput"><option value="5">5 — 高质量突破</option><option value="4">4 — 有明确进步</option><option value="3">3 — 完成基础训练</option><option value="2">2 — 质量偏低</option><option value="1">1 — 几乎没练到</option></select></div><div><label>主观训练强度</label><select id="sportEffortInput"><option value="3">3 — 轻松技术练习</option><option value="5" selected>5 — 中等</option><option value="7">7 — 有挑战</option><option value="9">9 — 接近极限</option></select></div></div><label class="sport-check"><input id="sportCountSpend" type="checkbox" checked /> 同时计入对应那天消费</label><button class="primary-btn full-btn" type="submit" value="default">保存并让 AI 校准进度</button></form>
+    </dialog>
+
+    <dialog id="sportSkillDialog">
+      <form method="dialog" id="sportSkillForm"><button class="close-btn" type="button" aria-label="Close">×</button><span class="modal-kicker">NEW SPORT SKILL</span><h2 id="sportSkillDialogTitle">开始学一项运动</h2><p>任何运动都可以。AI 会先做基线评估，再生成你专属的 0–100 路线。</p><input id="sportSkillEditId" type="hidden" /><label>运动项目</label><input id="sportSkillNameInput" maxlength="50" placeholder="游泳、篮球、网球、排球、跑步、攀岩……" required /><label>100 分对你代表什么？</label><textarea id="sportSkillGoalInput" rows="3" placeholder="例：自由泳能连续游 1,000m，稳定双侧换气，动作效率好，并能独立完成训练。" required></textarea><label>你目前会什么／不会什么？</label><textarea id="sportSkillBaselineInput" rows="5" placeholder="尽量具体：上过几次课、能做到的距离/速度/动作、最大的卡点、教练反馈、有没有比赛成绩……" required></textarea><div class="form-columns"><div><label>经验</label><select id="sportSkillExperienceInput"><option value="none">完全新手</option><option value="basic">学过一点</option><option value="regular">能独立练习</option><option value="advanced">有系统训练</option></select></div><div><label>想练多久</label><select id="sportSkillFrequencyInput"><option value="flexible">不固定，随时记录</option><option value="weekly1">每周约 1 次</option><option value="weekly2">每周约 2 次</option><option value="weekly3">每周 3 次以上</option></select></div></div><button class="primary-btn full-btn" type="submit">建立项目并做 AI 基线评估</button></form>
+    </dialog>
+
+    <dialog id="sportProgressDialog">
+      <div class="ai-shell"><button class="close-btn" type="button" aria-label="Close">×</button><div class="ai-head"><span>AI SKILL CALIBRATION</span><h2 id="sportProgressName">运动进度</h2><p id="sportProgressStatus">AI 会显示评分依据、置信度和下一关。</p></div><div class="ai-analysis" id="sportProgressAnalysis"></div></div>
+    </dialog>
+
+    <dialog id="exerciseDialog">
+      <div class="exercise-detail-shell"><button class="close-btn" type="button" aria-label="Close">×</button><div id="exerciseDetail"></div></div>
+    </dialog>
+
+    <dialog id="techniqueDialog">
+      <form method="dialog" id="techniqueForm"><button class="close-btn" type="button" aria-label="Close">×</button><span class="modal-kicker">AI MOVEMENT CHECK</span><h2>拍一系列动作，让 AI 看技术</h2><p>请上传 2–3 张同一次动作的连续照片，最好包含起始、最低点和结束位置。AI 只能做技术参考，不替代教练或医疗判断。</p><label>运动项目</label><select id="techniqueSkillInput"><option value="">一般动作分析</option></select><label>动作名称</label><input id="techniqueNameInput" placeholder="深蹲、卧推、网球发球、自由泳划手……" required /><label>你想让 AI 注意什么？</label><textarea id="techniqueNoteInput" rows="3" placeholder="例：膝盖会不会内扣？背部位置对不对？这是第 8 次动作。"></textarea><label class="technique-upload"><input id="techniqueImagesInput" type="file" accept="image/jpeg,image/png,image/webp" multiple required /><span>＋ 选择 2–3 张连续动作照片</span></label><div class="technique-preview" id="techniquePreview"></div><button class="primary-btn full-btn" id="techniqueSubmitBtn" type="submit">让 AI 分析并评分</button><div id="techniqueResult"></div></form>
+    </dialog>
+
+    <dialog id="sportAiDialog">
+      <div class="ai-shell">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <div class="ai-head">
+          <span>AI SPORTS JUDGE</span>
+          <h2 id="sportAiName">运动投资分析</h2>
+          <p id="sportAiStatus">AI 会判断这场运动钱到底值不值。</p>
+        </div>
+        <div class="ai-analysis" id="sportAiAnalysis"></div>
+      </div>
+    </dialog>
+
+    <dialog id="habitDialog">
+      <form method="dialog" id="habitForm">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker">BUILD A HABIT WAR</span>
+        <h2 id="habitDialogTitle">加一个不能断的习惯</h2>
+        <p>它应该是那种你不做，会觉得自己在变弱的东西。</p>
+        <input id="habitEditId" type="hidden" />
+        <label>习惯名称</label><input id="habitNameInput" type="text" maxlength="50" placeholder="例如：开发 1 小时、早睡、跑步、拉伸、背单词……" required />
+        <div class="form-columns">
+          <div><label>类型</label><select id="habitCategoryInput"><option value="discipline">纪律</option><option value="fitness">身体</option><option value="mind">脑力</option><option value="build">项目/成长</option></select></div>
+          <div><label>难度</label><select id="habitDifficultyInput"><option value="2">2 — 基础</option><option value="3" selected>3 — 正常</option><option value="4">4 — 有压力</option><option value="5">5 — 很硬</option></select></div>
+        </div>
+        <button class="primary-btn full-btn" id="habitSubmitBtn" type="submit">放进每日打卡</button>
+      </form>
+    </dialog>
+
+    <dialog id="habitAiDialog">
+      <div class="ai-shell">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <div class="ai-head">
+          <span>AI HABIT JUDGE</span>
+          <h2 id="habitAiName">习惯裁判</h2>
+          <p id="habitAiStatus">AI 会判断这习惯有没有真的把你变强。</p>
+        </div>
+        <div class="ai-analysis" id="habitAiAnalysis"></div>
+      </div>
+    </dialog>
+
+    <dialog id="syncDialog">
+      <div class="sync-shell">
+        <button class="close-btn" type="button" aria-label="Close">×</button>
+        <span class="modal-kicker">ACCOUNT ACCESS</span>
+        <h2 id="syncDialogTitle">先登入，再开始记</h2>
+        <p id="syncDialogCopy">注册或登入后，你的资料才会跟着帐号走。</p>
+        <div id="syncDialogState"></div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast"><span>✓</span><div><b>DAY SECURED</b><small>Your streak lives on.</small></div><button id="toastUndoBtn">撤销</button></div>
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>

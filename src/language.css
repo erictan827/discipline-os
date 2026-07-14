@@ -1,0 +1,13 @@
+.language-btn {
+  height: 31px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #101210;
+  color: var(--green);
+  font: 600 8px var(--mono);
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.language-btn:hover { border-color: #536636; background: #151a12; }
+html[lang="zh-CN"] body { font-family: "PingFang SC", "Microsoft YaHei", var(--sans); }
