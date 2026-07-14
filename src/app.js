@@ -46,6 +46,7 @@ const defaultData = {
   sportTechniqueReviews: [],
   savingsEntries: [],
   savingsAccounts: [],
+  savingsTransfers: [],
   savingsBattleSync: {},
   recurringSavings: [],
   savingsGoal: null,
@@ -218,11 +219,10 @@ function adjustAccountForEntry(entry, direction = 1) {
   if (direction < 0 && !entry.accountEffectApplied) return;
   const account = (data.savingsAccounts || []).find((item) => item.id === entry.accountId);
   if (!account) return;
-  const multiplier = account.type === 'creditCard'
-    ? (entry.type === 'expense' ? 1 : -1)
-    : (entry.type === 'income' ? 1 : -1);
+  const multiplier = entry.type === 'income' ? 1 : -1;
   const signedAmount = multiplier * Number(entry.amount || 0) * direction;
-  account.balance = Math.max(0, Number(account.balance || 0) + signedAmount);
+  const nextBalance = Number(account.balance || 0) + signedAmount;
+  account.balance = account.isCreditCard ? nextBalance : Math.max(0, nextBalance);
   account.updatedAt = new Date().toISOString();
   entry.accountEffectApplied = direction > 0;
 }
@@ -233,6 +233,7 @@ function openSavingsAccountForm(item = null) {
   document.querySelector('#savingsAccountDialogTitle').textContent = item ? '更新资产账户' : '添加资产账户';
   document.querySelector('#savingsAccountNameInput').value = item?.name || '';
   document.querySelector('#savingsAccountTypeInput').value = item?.type || 'bank';
+  document.querySelector('#savingsAccountCreditInput').checked = Boolean(item?.isCreditCard);
   document.querySelector('#savingsAccountBalanceInput').value = item?.balance ?? '';
   document.querySelector('#savingsAccountNoteInput').value = item?.note || '';
   const preview = document.querySelector('#savingsAccountImagePreview');
@@ -243,31 +244,67 @@ function openSavingsAccountForm(item = null) {
 
 function renderSavingsAccounts(ledgerNet) {
   const accounts = data.savingsAccounts || [];
-  const totalAssets = accounts.filter((account) => account.type !== 'creditCard').reduce((sum, account) => sum + Number(account.balance || 0), 0);
-  const totalLiabilities = accounts.filter((account) => account.type === 'creditCard').reduce((sum, account) => sum + Number(account.balance || 0), 0);
-  const netWorth = totalAssets - totalLiabilities;
-  const difference = netWorth - ledgerNet;
-  document.querySelector('#actualAssetTotal').textContent = money(totalAssets);
-  document.querySelector('#creditLiabilityTotal').textContent = money(totalLiabilities);
-  document.querySelector('#netWorthTotal').textContent = `${netWorth < 0 ? '− ' : ''}${money(Math.abs(netWorth))}`;
+  const accountTotal = accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  const absoluteTotal = accounts.reduce((sum, account) => sum + Math.abs(Number(account.balance || 0)), 0);
+  const difference = accountTotal - ledgerNet;
+  document.querySelector('#actualAssetTotal').textContent = `${accountTotal < 0 ? '− ' : ''}${money(Math.abs(accountTotal))}`;
   document.querySelector('#accountReconcileValue').textContent = `${difference > 0 ? '+' : difference < 0 ? '−' : ''} RM ${money(Math.abs(difference))}`;
   document.querySelector('#accountReconcileValue').className = Math.abs(difference) < 0.005 ? 'aligned' : 'different';
   document.querySelector('#accountReconcileCopy').textContent = !accounts.length
     ? '先加入 RHB、TNG、ASNB 等账户，才能看到真实资产。'
     : Math.abs(difference) < 0.005
-      ? '✓ 净资产与账本净现金流完全对齐。'
-      : `净资产与账本相差 RM ${money(Math.abs(difference))}；可能来自开户前余额、漏记交易或账户间转账。`;
+      ? '✓ 账户总额与账本净现金流完全对齐。'
+      : `账户总额与账本相差 RM ${money(Math.abs(difference))}；可能来自开户前余额或漏记交易。账户间转账不会改变总额。`;
   const grid = document.querySelector('#savingsAccountGrid');
   grid.innerHTML = accounts.length ? accounts.map((account) => {
-    const ratioBase = account.type === 'creditCard' ? totalLiabilities : totalAssets;
-    const ratio = ratioBase > 0 ? Number(account.balance || 0) / ratioBase * 100 : 0;
-    const fallback = { bank: 'BANK', ewallet: 'WALLET', investment: 'INVEST', cash: 'CASH', creditCard: 'CREDIT', other: 'ASSET' }[account.type] || 'ASSET';
+    const ratio = absoluteTotal > 0 ? Math.abs(Number(account.balance || 0)) / absoluteTotal * 100 : 0;
+    const fallback = account.isCreditCard ? 'CREDIT' : ({ bank: 'BANK', ewallet: 'WALLET', investment: 'INVEST', cash: 'CASH', other: 'ASSET' }[account.type] || 'ASSET');
+    const balance = Number(account.balance || 0);
     return `<article class="savings-account-card">
       <div class="savings-account-image ${account.image ? 'has-image' : ''}" ${account.image ? `style="background-image:url('${account.image}')"` : ''}><span>${account.image ? '' : fallback}</span></div>
-      <div class="savings-account-main ${account.type === 'creditCard' ? 'credit-card' : ''}"><span>${escapeHtml(account.typeLabel || fallback)}</span><h4>${escapeHtml(account.name)}</h4><strong>${account.type === 'creditCard' ? '欠款 ' : ''}RM ${money(account.balance)}</strong><small>${ratio.toFixed(1)}% ${account.type === 'creditCard' ? '信用卡负债' : '总资产'} · 更新 ${formatDateKey(keyOf(new Date(account.updatedAt)))}</small><i><u style="width:${Math.min(100, ratio)}%"></u></i>${account.note ? `<p>${escapeHtml(account.note)}</p>` : ''}</div>
+      <div class="savings-account-main ${account.isCreditCard ? 'credit-card' : ''}"><span>${escapeHtml(account.typeLabel || fallback)}</span><h4>${escapeHtml(account.name)}</h4><strong>${balance < 0 ? '− ' : ''}RM ${money(Math.abs(balance))}</strong><small>${ratio.toFixed(1)}% 账户分布 · ${account.isCreditCard ? '信用卡 · ' : ''}更新 ${formatDateKey(keyOf(new Date(account.updatedAt)))}</small><i><u style="width:${Math.min(100, ratio)}%"></u></i>${account.note ? `<p>${escapeHtml(account.note)}</p>` : ''}</div>
       <div class="savings-account-actions"><button data-edit-savings-account="${account.id}">修改</button><button data-delete-savings-account="${account.id}">删除</button></div>
     </article>`;
-  }).join('') : '<div class="saving-empty">还没有资产账户。加入 RHB、TNG、ASNB 或现金，真实总资产才会开始计算。</div>';
+  }).join('') : '<div class="saving-empty">还没有账户。加入 RHB、TNG、ASNB、现金或信用卡，账户总额才会开始计算。</div>';
+}
+
+function renderSavingsTransfers() {
+  const root = document.querySelector('#savingsTransferList');
+  if (!root) return;
+  const transfers = [...(data.savingsTransfers || [])].sort((a, b) => b.date.localeCompare(a.date) || new Date(b.createdAt) - new Date(a.createdAt));
+  root.innerHTML = transfers.length ? transfers.map((item) => {
+    const from = (data.savingsAccounts || []).find((account) => account.id === item.fromAccountId);
+    const to = (data.savingsAccounts || []).find((account) => account.id === item.toAccountId);
+    return `<div class="savings-transfer-row"><span>${formatDateKey(item.date)}</span><div><strong>${escapeHtml(from?.name || item.fromAccountName || '已删除账户')} <b>→</b> ${escapeHtml(to?.name || item.toAccountName || '已删除账户')}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}</div><b>RM ${money(item.amount)}</b><button data-delete-savings-transfer="${item.id}">撤销转账</button></div>`;
+  }).join('') : '<div class="saving-empty compact-empty">还没有账户转账记录。</div>';
+}
+
+function openSavingsTransferForm() {
+  const accounts = data.savingsAccounts || [];
+  if (accounts.length < 2) {
+    showToast('需要至少两个账户', '先添加转出与转入账户，才可以进行账户转账。');
+    return;
+  }
+  const options = accounts.map((account) => `<option value="${account.id}">${escapeHtml(account.name)} · ${Number(account.balance || 0) < 0 ? '− ' : ''}RM ${money(Math.abs(Number(account.balance || 0)))}</option>`).join('');
+  document.querySelector('#savingsTransferFromInput').innerHTML = options;
+  document.querySelector('#savingsTransferToInput').innerHTML = options;
+  document.querySelector('#savingsTransferToInput').selectedIndex = 1;
+  document.querySelector('#savingsTransferAmountInput').value = '';
+  document.querySelector('#savingsTransferDateInput').value = keyOf();
+  document.querySelector('#savingsTransferNoteInput').value = '';
+  document.querySelector('#savingsTransferDialog').showModal();
+}
+
+function applySavingsTransfer(transfer, direction = 1) {
+  const from = (data.savingsAccounts || []).find((account) => account.id === transfer.fromAccountId);
+  const to = (data.savingsAccounts || []).find((account) => account.id === transfer.toAccountId);
+  if (!from || !to) return false;
+  const amount = Number(transfer.amount || 0) * direction;
+  from.balance = Number(from.balance || 0) - amount;
+  to.balance = Number(to.balance || 0) + amount;
+  from.updatedAt = new Date().toISOString();
+  to.updatedAt = new Date().toISOString();
+  return true;
 }
 
 function battleSpendSyncItems() {
@@ -401,9 +438,8 @@ function savingsContext(entry = null) {
   const income = entries.filter((x) => x.type === 'income').reduce((s, x) => s + x.amount, 0);
   const expense = entries.filter((x) => x.type === 'expense').reduce((s, x) => s + x.amount, 0);
   const accounts = data.savingsAccounts || [];
-  const actualAssets = accounts.filter((account) => account.type !== 'creditCard').reduce((sum, account) => sum + Number(account.balance || 0), 0);
-  const creditLiabilities = accounts.filter((account) => account.type === 'creditCard').reduce((sum, account) => sum + Number(account.balance || 0), 0);
-  return { entry, totals: { income, expense, net: income - expense, actualAssets, creditLiabilities, netWorth: actualAssets - creditLiabilities }, accounts, recurring: data.recurringSavings || [], goal: data.savingsGoal, recent: entries.slice(-30), profile: 'Eric 重视自律、成长、运动、长期存款；要直接具体的马来西亚华人中文建议。' };
+  const accountTotal = accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
+  return { entry, totals: { income, expense, net: income - expense, accountTotal }, accounts, recurring: data.recurringSavings || [], goal: data.savingsGoal, recent: entries.slice(-30), profile: 'Eric 重视自律、成长、运动、长期存款；要直接具体的马来西亚华人中文建议。' };
 }
 
 function showSavingsAI(title, status, content = '') {
@@ -457,6 +493,7 @@ function renderSavings() {
   const entries = [...(data.savingsEntries || [])].sort((a, b) => b.date.localeCompare(a.date) || new Date(b.createdAt) - new Date(a.createdAt));
   const allNet = entries.reduce((sum, item) => sum + (item.type === 'income' ? item.amount : -item.amount), 0);
   renderSavingsAccounts(allNet);
+  renderSavingsTransfers();
   const range = savingsRange();
   const filtered = entries.filter((item) => (!range.start || item.date >= range.start) && (!range.end || item.date <= range.end));
   const income = filtered.filter((item) => item.type === 'income').reduce((sum, item) => sum + item.amount, 0);
@@ -688,6 +725,7 @@ function normalizeData(raw = {}) {
     sportTechniqueReviews: Array.isArray(raw.sportTechniqueReviews) ? raw.sportTechniqueReviews : [],
     savingsEntries: Array.isArray(raw.savingsEntries) ? raw.savingsEntries : [],
     savingsAccounts: Array.isArray(raw.savingsAccounts) ? raw.savingsAccounts : [],
+    savingsTransfers: Array.isArray(raw.savingsTransfers) ? raw.savingsTransfers : [],
     savingsBattleSync: raw.savingsBattleSync && typeof raw.savingsBattleSync === 'object' ? raw.savingsBattleSync : {},
     recurringSavings: Array.isArray(raw.recurringSavings) ? raw.recurringSavings : [],
     habits: Array.isArray(raw.habits) ? raw.habits : [],
@@ -808,16 +846,32 @@ function normalizeData(raw = {}) {
     accountId: item.accountId || '',
     accountEffectApplied: Boolean(item.accountEffectApplied),
   }));
-  next.savingsAccounts = next.savingsAccounts.map((item) => ({
+  next.savingsAccounts = next.savingsAccounts.map((item) => {
+    const legacyCreditCard = item.type === 'creditCard';
+    const isCreditCard = Boolean(item.isCreditCard || legacyCreditCard);
+    return {
+      id: item.id || crypto.randomUUID(),
+      name: item.name || '未命名账户',
+      type: legacyCreditCard ? 'bank' : (['bank', 'ewallet', 'investment', 'cash', 'other'].includes(item.type) ? item.type : 'other'),
+      isCreditCard,
+      balance: legacyCreditCard ? -Math.abs(Number(item.balance || 0)) : Number(item.balance || 0),
+      image: item.image || '',
+      note: item.note || '',
+      createdAt: item.createdAt || new Date().toISOString(),
+      updatedAt: item.updatedAt || item.createdAt || new Date().toISOString(),
+    };
+  });
+  next.savingsTransfers = next.savingsTransfers.map((item) => ({
     id: item.id || crypto.randomUUID(),
-    name: item.name || '未命名账户',
-    type: ['bank', 'ewallet', 'investment', 'cash', 'creditCard', 'other'].includes(item.type) ? item.type : 'other',
-    balance: Math.max(0, Number(item.balance || 0)),
-    image: item.image || '',
+    fromAccountId: item.fromAccountId || '',
+    toAccountId: item.toAccountId || '',
+    fromAccountName: item.fromAccountName || '',
+    toAccountName: item.toAccountName || '',
+    amount: Math.abs(Number(item.amount || 0)),
+    date: item.date || keyOf(),
     note: item.note || '',
     createdAt: item.createdAt || new Date().toISOString(),
-    updatedAt: item.updatedAt || item.createdAt || new Date().toISOString(),
-  }));
+  })).filter((item) => item.fromAccountId && item.toAccountId && item.amount > 0);
   Object.entries(next.savingsBattleSync).forEach(([transactionId, decision]) => {
     if (!decision || !['approved', 'declined'].includes(decision.status)) delete next.savingsBattleSync[transactionId];
   });
@@ -6181,6 +6235,7 @@ document.querySelector('#managerHead').addEventListener('click', (event) => {
 
 document.querySelector('#addSavingEntryBtn')?.addEventListener('click', () => openSavingForm());
 document.querySelector('#addSavingsAccountBtn')?.addEventListener('click', () => openSavingsAccountForm());
+document.querySelector('#transferSavingsAccountBtn')?.addEventListener('click', openSavingsTransferForm);
 document.querySelector('#savingsAccountImageInput')?.addEventListener('change', async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
@@ -6194,11 +6249,16 @@ document.querySelector('#savingsAccountForm')?.addEventListener('submit', (event
   if (!requireCloudAuth(isZh() ? '保存资产账户' : 'save asset accounts')) return;
   const id = document.querySelector('#savingsAccountEditId').value;
   const old = (data.savingsAccounts || []).find((item) => item.id === id);
+  const isCreditCard = document.querySelector('#savingsAccountCreditInput').checked;
+  let balance = Number(document.querySelector('#savingsAccountBalanceInput').value || 0);
+  if (isCreditCard && balance > 0) balance = -balance;
+  if (!isCreditCard) balance = Math.max(0, balance);
   const account = {
     id: id || crypto.randomUUID(),
     name: document.querySelector('#savingsAccountNameInput').value.trim(),
     type: document.querySelector('#savingsAccountTypeInput').value,
-    balance: Math.max(0, Number(document.querySelector('#savingsAccountBalanceInput').value || 0)),
+    isCreditCard,
+    balance,
     image: pendingSavingsAccountImage,
     note: document.querySelector('#savingsAccountNoteInput').value.trim(),
     createdAt: old?.createdAt || new Date().toISOString(),
@@ -6209,7 +6269,30 @@ document.querySelector('#savingsAccountForm')?.addEventListener('submit', (event
   if (old) data.savingsAccounts = data.savingsAccounts.map((item) => item.id === id ? account : item);
   else data.savingsAccounts = [...(data.savingsAccounts || []), account];
   saveData(); document.querySelector('#savingsAccountDialog').close(); render();
-  showToast('资产账户已对齐', `${account.name} · RM ${money(account.balance)}`);
+  showToast('账户已对齐', `${account.name} · ${account.balance < 0 ? '− ' : ''}RM ${money(Math.abs(account.balance))}`);
+});
+document.querySelector('#savingsTransferForm')?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (!requireCloudAuth('记录账户转账')) return;
+  const fromAccountId = document.querySelector('#savingsTransferFromInput').value;
+  const toAccountId = document.querySelector('#savingsTransferToInput').value;
+  const amount = Math.abs(Number(document.querySelector('#savingsTransferAmountInput').value || 0));
+  const from = (data.savingsAccounts || []).find((account) => account.id === fromAccountId);
+  const to = (data.savingsAccounts || []).find((account) => account.id === toAccountId);
+  if (!from || !to || fromAccountId === toAccountId || !amount) {
+    showToast('转账资料不完整', '转出和转入账户必须不同，金额必须大于 RM 0。');
+    return;
+  }
+  if (!from.isCreditCard && Number(from.balance || 0) < amount) {
+    showToast('转出余额不足', `${from.name} 目前只有 RM ${money(from.balance)}。`);
+    return;
+  }
+  const transfer = { id: crypto.randomUUID(), fromAccountId, toAccountId, fromAccountName: from.name, toAccountName: to.name, amount, date: document.querySelector('#savingsTransferDateInput').value || keyOf(), note: document.querySelector('#savingsTransferNoteInput').value.trim(), createdAt: new Date().toISOString() };
+  checkpoint('账户间转账');
+  applySavingsTransfer(transfer, 1);
+  data.savingsTransfers = [...(data.savingsTransfers || []), transfer];
+  saveData(); document.querySelector('#savingsTransferDialog').close(); render();
+  showToast('转账完成', `${from.name} → ${to.name} · RM ${money(amount)}`);
 });
 document.querySelector('#battleSyncBtn')?.addEventListener('click', openBattleSyncDialog);
 document.querySelector('#battleSyncDialog')?.addEventListener('click', (event) => {
@@ -6287,6 +6370,7 @@ document.querySelector('#savingsView')?.addEventListener('click', (event) => {
   const deleteRecurring = event.target.closest('[data-delete-recurring]');
   const editAccount = event.target.closest('[data-edit-savings-account]');
   const deleteAccount = event.target.closest('[data-delete-savings-account]');
+  const deleteTransfer = event.target.closest('[data-delete-savings-transfer]');
   if (mode) { savingsMode = mode.dataset.savingsMode; renderSavings(); }
   if (ai) analyzeSavings(ai.dataset.aiSaving);
   if (openReward) openSavingsReward();
@@ -6306,11 +6390,24 @@ document.querySelector('#savingsView')?.addEventListener('click', (event) => {
   if (editRecurring) openRecurringForm(data.recurringSavings.find((x) => x.id === editRecurring.dataset.editRecurring));
   if (toggleRecurring) { const item = data.recurringSavings.find((x) => x.id === toggleRecurring.dataset.toggleRecurring); if (item) { checkpoint('切换固定项目'); item.active = !item.active; saveData(); render(); } }
   if (deleteRecurring && window.confirm('删除这个固定项目？已经自动写入的旧记录会保留。')) { checkpoint('删除固定项目'); data.recurringSavings = data.recurringSavings.filter((x) => x.id !== deleteRecurring.dataset.deleteRecurring); saveData(); render(); }
+  if (deleteTransfer && window.confirm('撤销这笔转账？两个账户的余额会自动还原。')) {
+    if (!requireCloudAuth('撤销账户转账')) return;
+    const transfer = (data.savingsTransfers || []).find((item) => item.id === deleteTransfer.dataset.deleteSavingsTransfer);
+    if (transfer && applySavingsTransfer(transfer, -1)) {
+      checkpoint('撤销账户转账');
+      data.savingsTransfers = (data.savingsTransfers || []).filter((item) => item.id !== transfer.id);
+      saveData(); render(); showToast('转账已撤销', '两个账户余额已经还原。');
+    }
+  }
   if (editAccount) {
     const account = (data.savingsAccounts || []).find((item) => item.id === editAccount.dataset.editSavingsAccount);
     if (account) openSavingsAccountForm(account);
   }
-  if (deleteAccount && window.confirm('删除这个资产账户？账本记录会保留，但会变成未分配账户。')) {
+  if (deleteAccount && (data.savingsTransfers || []).some((item) => item.fromAccountId === deleteAccount.dataset.deleteSavingsAccount || item.toAccountId === deleteAccount.dataset.deleteSavingsAccount)) {
+    showToast('这个账户还有转账记录', '请先撤销相关转账记录，再删除账户。');
+    return;
+  }
+  if (deleteAccount && window.confirm('删除这个账户？账本记录会保留，但会变成未分配账户。')) {
     if (!requireCloudAuth('删除资产账户')) return;
     checkpoint('删除资产账户');
     const accountId = deleteAccount.dataset.deleteSavingsAccount;
