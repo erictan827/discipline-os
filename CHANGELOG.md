@@ -11,6 +11,7 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 - Actual total assets separated from ledger net cash flow.
 - Reconciliation difference with a clear RM0 fully-aligned state.
 - Optional account assignment for every savings-ledger entry.
+- Per-status transaction counts and total spending amounts in the battle-expense synchronization center.
 
 ### Changed
 

@@ -277,8 +277,9 @@ function renderBattleSyncDialog() {
   document.querySelector('#battleSyncDialogCount').textContent = `${items.filter((item) => battleSyncStatus(item.transaction.id) === 'pending').length} 笔待同步`;
   root.innerHTML = groups.map(([status, title, copy]) => {
     const rows = items.filter((item) => battleSyncStatus(item.transaction.id) === status);
+    const totalAmount = rows.reduce((sum, item) => sum + Number(item.transaction.amount || 0), 0);
     return `<section class="battle-sync-group ${status}">
-      <div class="battle-sync-group-head"><div><span>${status.toUpperCase()}</span><h3>${title}</h3><p>${copy}</p></div><strong>${rows.length}</strong></div>
+      <div class="battle-sync-group-head"><div><span>${status.toUpperCase()}</span><h3>${title}</h3><p>${copy}</p></div><div class="battle-sync-group-total"><strong>${rows.length} 笔</strong><b>RM ${money(totalAmount)}</b></div></div>
       <div class="battle-sync-list">${rows.length ? rows.map(({ recordDate, transaction }) => {
         const linked = linkedSavingEntry(transaction.id);
         return `<article class="battle-sync-row">
