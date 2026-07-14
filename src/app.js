@@ -215,6 +215,7 @@ function openSavingForm(item = null) {
 
 function adjustAccountForEntry(entry, direction = 1) {
   if (!entry?.accountId) return;
+  if (direction < 0 && !entry.accountEffectApplied) return;
   const account = (data.savingsAccounts || []).find((item) => item.id === entry.accountId);
   if (!account) return;
   const multiplier = account.type === 'creditCard'
@@ -223,6 +224,7 @@ function adjustAccountForEntry(entry, direction = 1) {
   const signedAmount = multiplier * Number(entry.amount || 0) * direction;
   account.balance = Math.max(0, Number(account.balance || 0) + signedAmount);
   account.updatedAt = new Date().toISOString();
+  entry.accountEffectApplied = direction > 0;
 }
 
 function openSavingsAccountForm(item = null) {
@@ -804,6 +806,7 @@ function normalizeData(raw = {}) {
     sourceTransactionId: item.sourceTransactionId || '',
     sourceRecordDate: item.sourceRecordDate || '',
     accountId: item.accountId || '',
+    accountEffectApplied: Boolean(item.accountEffectApplied),
   }));
   next.savingsAccounts = next.savingsAccounts.map((item) => ({
     id: item.id || crypto.randomUUID(),

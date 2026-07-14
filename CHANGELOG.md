@@ -17,6 +17,7 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 - Credit-card liability accounts for subscription and spending charges.
 - Separate actual assets, credit-card liabilities, and net-worth totals.
 - Credit-card-aware accounting where expenses increase debt and refunds or payments reduce debt.
+- Migration-safe account-effect markers so pre-fix ledger entries are applied exactly once and never incorrectly reversed.
 
 ### Changed
 
