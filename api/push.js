@@ -57,7 +57,13 @@ async function supabaseAdmin(config, path, options = {}) {
     },
   });
   if (!response.ok) throw new Error(`SUPABASE_${response.status}:${await response.text()}`);
-  return response.status === 204 ? null : response.json();
+  const raw = await response.text();
+  if (!raw.trim()) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error(`SUPABASE_INVALID_JSON_${response.status}`);
+  }
 }
 
 export default async function pushHandler(req, res) {

@@ -4,6 +4,10 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ## [Unreleased]
 
+### Fixed
+
+- Prevented successful empty Supabase REST responses from being parsed as JSON, which previously surfaced as `Unexpected end of JSON input` while saving or testing a phone notification subscription.
+
 ### Added
 
 - Opt-in Home Screen Web Push reminders for supported mobile and desktop PWAs.
