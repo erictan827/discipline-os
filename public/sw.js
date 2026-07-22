@@ -1,4 +1,4 @@
-const CACHE_NAME = 'discipline-os-zero-v8';
+const CACHE_NAME = 'discipline-os-life-v9';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -65,6 +65,39 @@ self.addEventListener('fetch', (event) => {
         .catch(() => cached || caches.match('/index.html'));
 
       return cached || networkFetch;
+    }),
+  );
+});
+
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try { payload = event.data?.json() || {}; } catch { payload = { body: event.data?.text() || '' }; }
+  const title = payload.title || 'Discipline OS';
+  event.waitUntil(Promise.all([
+    self.registration.showNotification(title, {
+      body: payload.body || '今天还没留下记录。30 秒就能重新接上。',
+      icon: '/icons/icon-192.svg',
+      badge: '/icons/icon-192.svg',
+      tag: payload.tag || 'discipline-os-reminder',
+      renotify: false,
+      data: { url: payload.url || '/?view=life' },
+      actions: [{ action: 'record', title: '立即记录' }],
+    }),
+    self.navigator?.setAppBadge ? self.navigator.setAppBadge(1) : Promise.resolve(),
+  ]));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || '/?view=life', self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((client) => client.url.startsWith(self.location.origin));
+      if (existing) {
+        existing.navigate(target);
+        return existing.focus();
+      }
+      return self.clients.openWindow(target);
     }),
   );
 });

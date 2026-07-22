@@ -32,10 +32,11 @@
     "start": "node server.js"
   },
   "devDependencies": {
+    "vercel": "^54.21.1",
     "vite": "^7.0.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",
-    "vercel": "^54.21.1"
+    "web-push": "^3.6.7"
   }
 }

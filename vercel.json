@@ -1,5 +1,13 @@
 {
   "framework": "vite",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "crons": [
+    { "path": "/api/reminders?slot=08", "schedule": "0 0 * * *" },
+    { "path": "/api/reminders?slot=12", "schedule": "0 4 * * *" },
+    { "path": "/api/reminders?slot=18", "schedule": "0 10 * * *" },
+    { "path": "/api/reminders?slot=20", "schedule": "0 12 * * *" },
+    { "path": "/api/reminders?slot=21", "schedule": "0 13 * * *" },
+    { "path": "/api/reminders?slot=22", "schedule": "0 14 * * *" }
+  ]
 }
