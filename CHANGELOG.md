@@ -6,6 +6,13 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ### Added
 
+- A new Life OS Lite home screen built around a 30-second, three-signal daily check-in: money, body, and forward movement.
+- Normal, travel, and recovery modes with mode-specific expectations instead of one rigid rule for every context.
+- A travel budget panel that tracks the accepted trip budget, recorded spend, and remaining amount.
+- A return flow that detects tracking gaps, explicitly removes backfill debt, and records recovery events.
+- Weekly connection coverage and lightweight movement, focus, unplanned-spend, and return metrics.
+- Backward-compatible migration from existing battle records and sports sessions into Lite check-ins while preserving every original record.
+- Intentional progressive disclosure: the full battle, ledger, reward, sport, habit, and data-management systems remain one click away.
 - Asset-account tracking for banks, e-wallets, investments, cash, and other holdings.
 - Custom account images, exact balances, allocation percentages, and last-updated timestamps.
 - Actual total assets separated from ledger net cash flow.
@@ -24,6 +31,11 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ### Changed
 
+- Made Life OS Lite the default landing screen and moved the high-complexity feature navigation behind an explicit detail toggle.
+- Replaced all-or-nothing daily pressure on the default screen with weekly coverage and minimum viable continuity.
+- Paused the generation of new habit penalties by default; historical penalties remain visible and untouched.
+- Made Lite check-ins local-first so a weak or missing connection cannot block today's record.
+- Reframed travel spending as an accepted-budget decision instead of an automatic discipline loss.
 - Renamed the former all-time savings figure to ledger net cash flow so it is not mistaken for current bank balances.
 - Simplified the former asset/liability/net-worth dashboard into one signed account total and one reconciliation result.
 - Strengthened cash-flow type selection with solid green income, red expense, and white credit-payment states; fixed ledger action-label overflow.

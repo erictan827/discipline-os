@@ -1,6 +1,6 @@
 # Discipline OS
 
-> A gamified personal operating system for turning daily discipline, spending decisions, habits, sports training, rewards, and savings into measurable progress.
+> A low-friction personal operating system that helps life stay connected through ordinary days, travel, and recovery—without deleting the powerful tracking tools underneath.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-discipline--os--beige.vercel.app-b6f43b?style=for-the-badge&logo=vercel&logoColor=black)](https://discipline-os-beige.vercel.app)
 [![Built with Vite](https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
@@ -9,14 +9,19 @@
 
 **Live product:** [discipline-os-beige.vercel.app](https://discipline-os-beige.vercel.app)
 
-Discipline OS is not a conventional expense tracker or habit checklist. It treats self-discipline as a game system: every day has a result, every transaction has context, every resisted impulse becomes evidence, and every reward must be earned.
+Discipline OS is not a conventional expense tracker or habit checklist. Its default experience is now a 30-second daily connection ritual: rough spending, body movement, and one meaningful next step. Missing days creates no backfill debt. Returning is progress.
 
-The interface is optimized for fast daily use on desktop and mobile, with a dark tactical visual system, bilingual UI, cloud synchronization, AI-assisted reviews, and installable PWA support.
+The original battle, account, savings, reward, sport, habit, and AI systems remain available as an expandable expert layer. The interface is optimized for fast daily use on desktop and mobile, with a dark tactical visual system, bilingual UI, local-first saving, cloud synchronization, and installable PWA support.
 
 ## Product pillars
 
 | System | What it does |
 | --- | --- |
+| Life OS Lite | Captures three daily signals in about 30 seconds and becomes the calm default home screen. |
+| Return Flow | Detects a tracking gap, removes backfill pressure, and records the act of returning instead of punishing absence. |
+| Travel Mode | Replaces unrealistic RM0 pressure with one accepted trip budget and lightweight daily check-ins. |
+| Recovery Mode | Reduces the day to minimum viable actions while preserving continuity and honest data. |
+| Weekly Coverage | Measures connection across the current week instead of using a fragile all-or-nothing streak. |
 | Daily Battle | Records RM0 wins or multiple itemized expenses for any date, including backfills. |
 | Battle History | Provides date-range analytics, essential vs. impulse totals, transaction-level editing, and AI reviews. |
 | Reward Vault | Turns defended money into controlled reward progress, mystery drops, earned rewards, and outcome tracking. |
@@ -29,6 +34,20 @@ The interface is optimized for fast daily use on desktop and mobile, with a dark
 | Data Control Center | Centralizes record, reward, impulse, and training data management. |
 
 ## Key capabilities
+
+### Life OS Lite and anti-dropout design
+
+- Default to one calm home screen instead of presenting the entire system at once.
+- Save rough spending, movement, and one meaningful task in a single check-in.
+- Treat detailed battle transactions as optional depth, not a daily prerequisite.
+- Migrate existing battle and sport records into Lite check-ins without deleting or rewriting source data.
+- Save Lite actions locally first, even while offline, and synchronize them when the authenticated cloud connection is available.
+- Detect missing days and offer a one-click return flow with no forced backfill.
+- Use weekly connection coverage rather than a streak that resets the user's identity after one disruption.
+- Pause the creation of new habit penalties by default while preserving all historical penalty records.
+- Hide advanced navigation until the user intentionally expands it.
+- Switch between normal, travel, and recovery modes without losing historical data.
+- Track one total travel budget with spent and remaining amounts instead of judging travel as a failed ordinary day.
 
 ### Daily spending and battle history
 
@@ -63,7 +82,7 @@ The interface is optimized for fast daily use on desktop and mobile, with a dark
 - Backfill recent completions when a habit was completed but logged late.
 - Use recovery windows and grace passes.
 - Unlock habit reward drops.
-- Generate escalating penalties for missed commitments.
+- Preserve historical penalty records while Lite mode pauses new penalties by default.
 - Analyze habit fit separately from daily execution quality.
 
 ### Independent savings ledger
@@ -208,4 +227,4 @@ Discipline OS is under active development. Product changes, fixes, and feature r
 
 ---
 
-Built as a living personal discipline system: **Discipline over dopamine. Evidence over excuses.**
+Built as a living personal operating system: **Stay connected. Return without debt. Add detail only when it helps.**

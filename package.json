@@ -2,7 +2,7 @@
   "name": "discipline-os-zero",
   "private": true,
   "version": "1.0.0",
-  "description": "A gamified personal operating system for daily discipline, spending, habits, sports progression, earned rewards, and savings.",
+  "description": "A low-friction personal operating system for staying connected through daily life, travel, recovery, money, movement, habits, and meaningful progress.",
   "homepage": "https://discipline-os-beige.vercel.app",
   "repository": {
     "type": "git",
@@ -13,6 +13,8 @@
   },
   "keywords": [
     "discipline",
+    "life-os",
+    "personal-operating-system",
     "habit-tracker",
     "expense-tracker",
     "savings",
