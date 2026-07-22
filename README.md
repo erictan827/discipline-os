@@ -22,6 +22,7 @@ The original battle, account, savings, reward, sport, habit, and AI systems rema
 | Travel Mode | Replaces unrealistic RM0 pressure with one accepted trip budget and lightweight daily check-ins. |
 | Recovery Mode | Reduces the day to minimum viable actions while preserving continuity and honest data. |
 | Weekly Coverage | Measures connection across the current week instead of using a fragile all-or-nothing streak. |
+| Smart Reminders | Sends an opt-in phone notification only when today's check-in is still missing, then stays quiet after completion. |
 | Daily Battle | Records RM0 wins or multiple itemized expenses for any date, including backfills. |
 | Battle History | Provides date-range analytics, essential vs. impulse totals, transaction-level editing, and AI reviews. |
 | Reward Vault | Turns defended money into controlled reward progress, mystery drops, earned rewards, and outcome tracking. |
@@ -48,6 +49,11 @@ The original battle, account, savings, reward, sport, habit, and AI systems rema
 - Hide advanced navigation until the user intentionally expands it.
 - Switch between normal, travel, and recovery modes without losing historical data.
 - Track one total travel budget with spent and remaining amounts instead of judging travel as a failed ordinary day.
+- Use a one-tap minimum check-in on exhausted days; it stops further reminders while keeping the record explicitly marked as minimal.
+- Opt into Home Screen Web Push reminders on supported iPhone, iPad, Android, and desktop browsers.
+- Open the Today screen directly from the lock-screen notification and mirror pending attention with an app-icon badge.
+- Choose one daily reminder window and an optional fallback window, protected by a minimum delivery gap.
+- Skip all reminders automatically once the current day has any Lite check-in.
 
 ### Daily spending and battle history
 
@@ -110,6 +116,7 @@ The original battle, account, savings, reward, sport, habit, and AI systems rema
 - Cloud state synchronization across devices.
 - Local-first fallback through `localStorage`.
 - Installable PWA with manifest and service worker.
+- Standards-based Web Push through authenticated, per-device subscriptions stored in Supabase.
 - Chinese and English interface modes.
 - Customizable dark/light themes and accent colors.
 
@@ -214,6 +221,7 @@ vercel --prod
 - Local state remains available as an offline-friendly fallback.
 - Cloud data is scoped through Supabase authentication and row-level security.
 - AI requests receive only the context required for the requested analysis.
+- Push endpoints and encryption keys remain server-only; notification subscriptions are scoped to the authenticated account and can be disabled per device.
 - Generated build output, local state, credentials, and Vercel metadata are excluded from Git.
 
 ## Development status

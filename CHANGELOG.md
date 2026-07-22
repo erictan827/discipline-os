@@ -6,6 +6,13 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ### Added
 
+- Opt-in Home Screen Web Push reminders for supported mobile and desktop PWAs.
+- Intelligent missing-check-in suppression so notifications stop immediately after any full or minimum daily check-in.
+- Lock-screen deep links to the Today screen, service-worker notification handling, and app-icon badges.
+- Per-device authenticated push subscriptions with Supabase row-level security and server-only VAPID delivery.
+- Configurable primary and optional fallback reminder windows, plus a 90-minute anti-spam delivery guard.
+- Context-aware reminder language for normal, travel, recovery, and return-after-a-gap states.
+- A one-tap minimum check-in for exhausted or overloaded days, explicitly marked for optional later completion.
 - A new Life OS Lite home screen built around a 30-second, three-signal daily check-in: money, body, and forward movement.
 - Normal, travel, and recovery modes with mode-specific expectations instead of one rigid rule for every context.
 - A travel budget panel that tracks the accepted trip budget, recorded spend, and remaining amount.
@@ -31,6 +38,8 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ### Changed
 
+- Renamed and repositioned the PWA as Discipline OS Life in the install manifest.
+- Upgraded the service-worker cache and added push, notification-click, direct-open, and badge behavior.
 - Made Life OS Lite the default landing screen and moved the high-complexity feature navigation behind an explicit detail toggle.
 - Replaced all-or-nothing daily pressure on the default screen with weekly coverage and minimum viable continuity.
 - Paused the generation of new habit penalties by default; historical penalties remain visible and untouched.
