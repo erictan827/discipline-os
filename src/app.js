@@ -61,6 +61,14 @@ const defaultData = {
   sportBudget: 200,
   focusRewardId: null,
   records: {},
+  life: {
+    mode: 'normal',
+    checkins: {},
+    recoveryEvents: [],
+    penaltiesPaused: true,
+    advancedVisible: false,
+    travel: null,
+  },
   settings: { ...defaultSettings },
 };
 
@@ -981,6 +989,43 @@ function normalizeData(raw = {}) {
       normalizeRecord(item),
     ]),
   );
+  const rawLife = raw.life && typeof raw.life === 'object' ? raw.life : {};
+  const checkins = rawLife.checkins && typeof rawLife.checkins === 'object' ? { ...rawLife.checkins } : {};
+  Object.entries(next.records).forEach(([date, record]) => {
+    if (checkins[date]) return;
+    const transactions = getRecordTransactions(record);
+    checkins[date] = {
+      date,
+      mode: 'normal',
+      spendAmount: transactions.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+      spendIntent: transactions.some((item) => item.type === 'impulse') ? 'unplanned' : 'planned',
+      movement: 'none',
+      focus: '',
+      focusDone: false,
+      migrated: true,
+      completedAt: record.closedAt || transactions[0]?.createdAt || `${date}T20:00:00.000Z`,
+    };
+  });
+  next.sportsSessions.forEach((session) => {
+    const date = session.date || keyOf(new Date(session.createdAt));
+    if (!checkins[date]) checkins[date] = { date, mode: 'normal', spendAmount: 0, spendIntent: 'unknown', focus: '', focusDone: false, migrated: true, completedAt: session.createdAt };
+    checkins[date].movement = 'full';
+  });
+  next.life = {
+    mode: ['normal', 'travel', 'recovery'].includes(rawLife.mode) ? rawLife.mode : 'normal',
+    checkins,
+    recoveryEvents: Array.isArray(rawLife.recoveryEvents) ? rawLife.recoveryEvents : [],
+    penaltiesPaused: rawLife.penaltiesPaused !== false,
+    advancedVisible: Boolean(rawLife.advancedVisible),
+    travel: rawLife.travel && typeof rawLife.travel === 'object' ? {
+      ...rawLife.travel,
+      id: rawLife.travel.id || crypto.randomUUID(),
+      name: rawLife.travel.name || '旅行',
+      startDate: rawLife.travel.startDate || keyOf(),
+      endDate: rawLife.travel.endDate || rawLife.travel.startDate || keyOf(),
+      budget: Math.max(0, Number(rawLife.travel.budget || 0)),
+    } : null,
+  };
   return next;
 }
 
@@ -1041,6 +1086,9 @@ function hasMeaningfulLocalState() {
     || (data.savingsEntries || []).length
     || (data.recurringSavings || []).length
     || data.savingsGoal
+    || Object.keys(data.life?.checkins || {}).length
+    || (data.life?.recoveryEvents || []).length
+    || data.life?.travel
     || Object.keys(data.records || {}).length,
   );
 }
@@ -1855,6 +1903,7 @@ function buildHabitPenalty(summary, existing = null) {
 }
 
 function syncHabitPenaltyQueue() {
+  if (data.life?.penaltiesPaused !== false) return false;
   const recoveryBefore = data.habitRecoveryUntil;
   const existing = new Map((data.habitPenalties || []).map((item) => [item.forDate, item]));
   const gracedDates = new Set((data.habitGraceUses || []).map((item) => item.date));
@@ -1908,7 +1957,8 @@ function applyLanguage() {
     setText('#victoryTitle', '可以，今天是你的。');
     setText('#victoryCopy', '连赢 +1 · XP +100');
     setText('#todayMonth', '回到今天');
-    document.querySelector('[data-view="command"]').innerHTML = `<span class="nav-icon">⌁</span> ${t.command}`;
+    document.querySelector('[data-view="life"]').innerHTML = '<span class="nav-icon">●</span> 今天';
+    document.querySelector('[data-view="command"]').innerHTML = '<span class="nav-icon">⌁</span> 详细战绩';
     document.querySelector('[data-view="history"]').innerHTML = `<span class="nav-icon">◫</span> ${t.history}`;
     document.querySelector('[data-view="loot"]').innerHTML = `<span class="nav-icon">◆</span> ${t.loot}`;
     document.querySelector('[data-view="sports"]').innerHTML = `<span class="nav-icon">◉</span> ${t.sports}`;
@@ -1990,7 +2040,8 @@ function applyLanguage() {
     setText('#victoryTitle', 'Today, you beat yourself.');
     setText('#victoryCopy', 'STREAK +1 · XP +100');
     setText('#todayMonth', 'TODAY');
-    document.querySelector('[data-view="command"]').innerHTML = '<span class="nav-icon">⌁</span> Today';
+    document.querySelector('[data-view="life"]').innerHTML = '<span class="nav-icon">●</span> Today';
+    document.querySelector('[data-view="command"]').innerHTML = '<span class="nav-icon">⌁</span> Detailed Battle';
     document.querySelector('[data-view="history"]').innerHTML = '<span class="nav-icon">◫</span> Records';
     document.querySelector('[data-view="loot"]').innerHTML = '<span class="nav-icon">◆</span> Reward Vault';
     document.querySelector('[data-view="sports"]').innerHTML = '<span class="nav-icon">◉</span> Sports';
@@ -2068,14 +2119,101 @@ function updateClock() {
     .toUpperCase()
     .replace(',', ' ·');
   document.querySelector('#greeting').textContent = isZh()
-    ? `${data.name}，今天只准赢。`
-    : `${data.name}. Winning is the only option today.`;
+    ? `${data.name}，今天保持连接就够了。`
+    : `${data.name}. Staying connected is enough today.`;
+}
+
+function lifeRecordSpend(date) {
+  const record = data.records?.[date];
+  return getRecordTransactions(record).reduce((sum, item) => sum + Number(item.amount || 0), 0);
+}
+
+function lifeWeekKeys(date = new Date()) {
+  const start = new Date(date); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+  return Array.from({ length: 7 }, (_, index) => { const day = new Date(start); day.setDate(start.getDate() + index); return keyOf(day); });
+}
+
+function renderLife() {
+  const root = document.querySelector('#lifeView');
+  if (!root) return;
+  const life = data.life || defaultData.life;
+  document.body.classList.toggle('show-advanced', Boolean(life.advancedVisible));
+  document.querySelector('#advancedModeToggle').innerHTML = life.advancedVisible ? '<span class="nav-icon">−</span> 收起详细系统' : '<span class="nav-icon">＋</span> 展开详细系统';
+  document.querySelectorAll('[data-life-mode]').forEach((button) => button.classList.toggle('active', button.dataset.lifeMode === life.mode));
+  const today = keyOf();
+  const todayCheckin = life.checkins?.[today] || null;
+  const detailedSpend = lifeRecordSpend(today);
+  document.querySelector('#lifeSpendInput').value = todayCheckin?.spendAmount ?? (detailedSpend || '');
+  document.querySelector('#lifeSpendIntent').value = todayCheckin?.spendIntent || (detailedSpend ? 'unknown' : 'planned');
+  document.querySelector('#lifeSpendSource').textContent = detailedSpend ? `详细战绩今天已有 RM ${money(detailedSpend)}；这里可以保留大概总额。` : '没有细项也没关系，先留下大概。';
+  document.querySelector(`input[name="lifeMovement"][value="${todayCheckin?.movement || 'none'}"]`).checked = true;
+  document.querySelector('#lifeFocusInput').value = todayCheckin?.focus || '';
+  document.querySelector('#lifeFocusDoneInput').checked = Boolean(todayCheckin?.focusDone);
+  document.querySelector('#lifeCloseStatus').textContent = todayCheckin ? '今天已经保持连接' : '今天还没留下记录';
+  document.querySelector('#lifeCloseHint').textContent = todayCheckin ? `最后保存：${new Date(todayCheckin.completedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} · 随时可以更新` : '30 秒内完成，不需要写得漂亮。';
+  const allDates = Object.keys(life.checkins || {}).filter((date) => date < today).sort();
+  const lastDate = allDates.at(-1) || '';
+  const gapDays = lastDate ? Math.max(0, Math.round((parseKey(today) - parseKey(lastDate)) / DAY) - 1) : 0;
+  const returnCard = document.querySelector('#lifeReturnCard');
+  returnCard.hidden = Boolean(todayCheckin) || gapDays < 1;
+  if (!returnCard.hidden) {
+    document.querySelector('#lifeReturnTitle').textContent = gapDays === 1 ? '昨天没记，也完全来得及。' : `中间空了 ${gapDays} 天，但你现在已经回来了。`;
+    document.querySelector('#lifeReturnCopy').textContent = '不用逐天补完，也没有惩罚。从今天留下三个信号就重新接上。';
+  }
+  const weekKeys = lifeWeekKeys();
+  const weekCheckins = weekKeys.map((date) => life.checkins?.[date] || null);
+  const labels = ['一', '二', '三', '四', '五', '六', '日'];
+  document.querySelector('#lifeWeekDays').innerHTML = weekKeys.map((date, index) => `<div class="life-day ${weekCheckins[index] ? 'connected' : ''} ${date === today ? 'today' : ''}"><span>周${labels[index]} · ${date.slice(5).replace('-', '/')}</span><b>${weekCheckins[index] ? (weekCheckins[index].mode === 'travel' ? '旅行 · 已连接' : weekCheckins[index].mode === 'recovery' ? '恢复 · 已连接' : '✓ 已连接') : date > today ? '还没到' : '未追踪'}</b></div>`).join('');
+  const connected = weekCheckins.filter(Boolean);
+  document.querySelector('#lifeWeekScore').textContent = `${connected.length} / 7`;
+  document.querySelector('#lifeMovementDays').textContent = `${connected.filter((item) => item.movement && item.movement !== 'none').length} 天`;
+  document.querySelector('#lifeFocusDays').textContent = `${connected.filter((item) => item.focusDone).length} 天`;
+  document.querySelector('#lifeUnplannedDays').textContent = `${connected.filter((item) => item.spendIntent === 'unplanned').length} 天`;
+  const lastRecovery = [...(life.recoveryEvents || [])].sort((a, b) => new Date(b.returnedAt) - new Date(a.returnedAt))[0];
+  document.querySelector('#lifeReturnMetric').textContent = lastRecovery ? `${lastRecovery.gapDays || 0} 天后回来` : '今天也能回来';
+  const travelPanel = document.querySelector('#lifeTravelPanel');
+  travelPanel.hidden = life.mode !== 'travel';
+  if (life.travel) {
+    const travelDates = new Set([
+      ...Object.keys(life.checkins || {}),
+      ...Object.keys(data.records || {}),
+    ].filter((date) => date >= life.travel.startDate && date <= life.travel.endDate));
+    const travelSpent = [...travelDates].reduce((sum, date) => {
+      const detailed = lifeRecordSpend(date);
+      return sum + (detailed || Number(life.checkins?.[date]?.spendAmount || 0));
+    }, 0);
+    const remaining = Number(life.travel.budget || 0) - travelSpent;
+    document.querySelector('#lifeTravelTitle').textContent = `${life.travel.name} · ${formatDateKey(life.travel.startDate)} — ${formatDateKey(life.travel.endDate)}`;
+    document.querySelector('#lifeTravelBudget').textContent = `RM ${money(life.travel.budget)}`;
+    document.querySelector('#lifeTravelSpent').textContent = `RM ${money(travelSpent)}`;
+    document.querySelector('#lifeTravelRemaining').textContent = `${remaining < 0 ? '− ' : ''}RM ${money(Math.abs(remaining))}`;
+  }
+}
+
+function getLifeGapDays() {
+  const today = keyOf();
+  const previousDates = Object.keys(data.life?.checkins || {}).filter((date) => date < today).sort();
+  const lastDate = previousDates.at(-1);
+  return lastDate ? Math.max(0, Math.round((parseKey(today) - parseKey(lastDate)) / DAY) - 1) : 0;
+}
+
+function openLifeTravelDialog() {
+  const travel = data.life?.travel;
+  const defaultEnd = new Date();
+  defaultEnd.setDate(defaultEnd.getDate() + 3);
+  document.querySelector('#lifeTravelNameInput').value = travel?.name || '';
+  document.querySelector('#lifeTravelStartInput').value = travel?.startDate || keyOf();
+  document.querySelector('#lifeTravelEndInput').value = travel?.endDate || keyOf(defaultEnd);
+  document.querySelector('#lifeTravelBudgetInput').value = travel?.budget || '';
+  document.querySelector('#lifeEndTravelBtn').hidden = data.life?.mode !== 'travel';
+  document.querySelector('#lifeTravelDialog').showModal();
 }
 
 function render() {
   applyTheme();
   applyLanguage();
   updateClock();
+  renderLife();
   renderRules();
   renderDashboard();
   renderCalendar();
@@ -3261,10 +3399,13 @@ function renderHabits() {
   document.querySelector('#habitCount').textContent = String(habits.length);
   document.querySelector('#habitTodayDone').textContent = `${todayDone}/${Math.max(1, habits.length)}`;
   document.querySelector('#habitCompletionScore').textContent = String(completionScore);
-  document.querySelector('#habitPenaltyLevel').textContent = topPenalty ? `Lv.${topPenalty.level}` : (isZh() ? '无' : 'None');
+  const penaltiesPaused = data.life?.penaltiesPaused !== false;
+  document.querySelector('#habitPenaltyLevel').textContent = penaltiesPaused ? (isZh() ? '已暂停' : 'Paused') : (topPenalty ? `Lv.${topPenalty.level}` : (isZh() ? '无' : 'None'));
   document.querySelector('#habitRank').textContent = habitRank;
   document.querySelector('#habitDangerScore').textContent = String(dangerScore);
-  document.querySelector('#habitPenaltyCopy').textContent = activePenalty
+  document.querySelector('#habitPenaltyCopy').textContent = penaltiesPaused
+    ? (isZh() ? '轻量系统已暂停新增惩罚。漏记不会欠债，回来就继续。' : 'Lite mode paused new penalties. Missing a day creates no debt; just return.')
+    : activePenalty
     ? `${activePenalty.title} · ${activePenalty.copy}`
     : hiddenPenalty
       ? (isZh() ? `昨天没全清。今天有 1 个隐藏惩罚箱在等你开。` : 'You missed a full clear yesterday. One hidden punishment box is waiting.')
@@ -5591,6 +5732,121 @@ document.querySelector('#syncBtn').addEventListener('click', () => {
 document.querySelector('#sidebarToggleBtn').addEventListener('click', toggleSidebar);
 document.querySelector('#sidebarBackdrop').addEventListener('click', () => {
   if (isMobileSidebarMode()) closeSidebar();
+});
+
+document.querySelector('.brand')?.addEventListener('click', (event) => {
+  event.preventDefault();
+  switchView('life');
+  if (isMobileSidebarMode()) closeSidebar();
+});
+
+document.querySelector('#lifeCheckinForm')?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const today = keyOf();
+  const old = data.life?.checkins?.[today];
+  checkpoint(old ? '更新今日轻量记录' : '保存今日轻量记录');
+  data.life.checkins[today] = {
+    ...old,
+    date: today,
+    mode: data.life.mode,
+    spendAmount: Math.max(0, Number(document.querySelector('#lifeSpendInput').value || 0)),
+    spendIntent: document.querySelector('#lifeSpendIntent').value,
+    movement: document.querySelector('input[name="lifeMovement"]:checked')?.value || 'none',
+    focus: document.querySelector('#lifeFocusInput').value.trim(),
+    focusDone: document.querySelector('#lifeFocusDoneInput').checked,
+    completedAt: new Date().toISOString(),
+  };
+  saveData();
+  render();
+  showToast(isZh() ? '今天已经接上了' : 'Today is connected', isZh() ? '不用完美。三个信号已经安全保存。' : 'No perfection required. Your three signals are saved.');
+});
+
+document.querySelector('#lifeModeSwitch')?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-life-mode]');
+  if (!button) return;
+  if (button.dataset.lifeMode === 'travel') {
+    openLifeTravelDialog();
+    return;
+  }
+  checkpoint('切换生活模式');
+  data.life.mode = button.dataset.lifeMode;
+  saveData();
+  render();
+  showToast(button.dataset.lifeMode === 'recovery' ? '恢复日已开启' : '已回到普通日', button.dataset.lifeMode === 'recovery' ? '今天只守最低动作，不追进度。' : '继续用三个信号保持连接。');
+});
+
+document.querySelector('#lifeReturnBtn')?.addEventListener('click', () => {
+  const gapDays = getLifeGapDays();
+  checkpoint('失联后回归');
+  data.life.mode = 'recovery';
+  data.life.recoveryEvents = [...(data.life.recoveryEvents || []), {
+    id: crypto.randomUUID(),
+    gapDays,
+    returnedAt: new Date().toISOString(),
+  }];
+  saveData();
+  render();
+  document.querySelector('#lifeSpendInput')?.focus();
+  showToast('欢迎回来', '中间的日子不用补。今天留一个最小记录就够。');
+});
+
+document.querySelector('#lifeTravelSettingsBtn')?.addEventListener('click', openLifeTravelDialog);
+
+document.querySelector('#lifeTravelForm')?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const startDate = document.querySelector('#lifeTravelStartInput').value;
+  const endDate = document.querySelector('#lifeTravelEndInput').value;
+  if (endDate < startDate) {
+    showToast('日期不对', '旅行结束日期不能早于开始日期。');
+    return;
+  }
+  checkpoint('设置旅行模式');
+  data.life.mode = 'travel';
+  data.life.travel = {
+    id: data.life.travel?.id || crypto.randomUUID(),
+    name: document.querySelector('#lifeTravelNameInput').value.trim(),
+    startDate,
+    endDate,
+    budget: Math.max(0, Number(document.querySelector('#lifeTravelBudgetInput').value || 0)),
+    createdAt: data.life.travel?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  saveData();
+  document.querySelector('#lifeTravelDialog').close();
+  render();
+  showToast('旅行模式已开启', '旅行花钱不算输，只看整趟预算。');
+});
+
+document.querySelector('#lifeEndTravelBtn')?.addEventListener('click', () => {
+  checkpoint('结束旅行模式');
+  data.life.mode = 'normal';
+  if (data.life.travel) data.life.travel.endedAt = new Date().toISOString();
+  saveData();
+  document.querySelector('#lifeTravelDialog').close();
+  render();
+  showToast('旅行已结束', '不用补旅行期间的旧记录，从今天继续。');
+});
+
+document.querySelector('#advancedModeToggle')?.addEventListener('click', () => {
+  data.life.advancedVisible = !data.life.advancedVisible;
+  saveData();
+  render();
+});
+
+document.querySelector('#lifeShowAdvancedBtn')?.addEventListener('click', () => {
+  data.life.advancedVisible = true;
+  saveData();
+  render();
+  showToast('详细系统已展开', '战绩、账本、运动、奖励和数据管理都还在。');
+});
+
+document.querySelector('#lifeView')?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-life-open]');
+  if (!button) return;
+  data.life.advancedVisible = true;
+  saveData();
+  render();
+  switchView(button.dataset.lifeOpen);
 });
 
 document.querySelector('#languageBtn').addEventListener('click', () => {

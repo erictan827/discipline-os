@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Discipline OS" />
-    <title>Discipline OS — Zero</title>
+    <title>Discipline OS — Life, without losing track</title>
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icons/icon-192.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="/src/theme-controls.css" />
     <link rel="stylesheet" href="/src/savings.css" />
     <link rel="stylesheet" href="/src/topbar.css" />
+    <link rel="stylesheet" href="/src/life.css" />
   </head>
   <body>
     <div class="noise"></div>
@@ -41,14 +42,15 @@
         </a>
 
         <nav>
-          <button class="nav-item active" data-view="command"><span class="nav-icon">⌁</span> Command</button>
-          <button class="nav-item" data-view="history"><span class="nav-icon">◫</span> History</button>
-          <button class="nav-item" data-view="loot"><span class="nav-icon">◆</span> 战利品库</button>
-          <button class="nav-item" data-view="sports"><span class="nav-icon">◉</span> 运动</button>
-          <button class="nav-item" data-view="habits"><span class="nav-icon">▤</span> 习惯打卡</button>
-          <button class="nav-item" data-view="savings"><span class="nav-icon">◒</span> 存钱账本</button>
-          <button class="nav-item" data-view="manager"><span class="nav-icon">▣</span> 数据管理</button>
-          <button class="nav-item" data-view="protocol"><span class="nav-icon">◇</span> Protocol</button>
+          <button class="nav-item active" data-view="life"><span class="nav-icon">●</span> 今天</button>
+          <button class="nav-item advanced-nav" data-view="command"><span class="nav-icon">⌁</span> 详细战绩</button>
+          <button class="nav-item advanced-nav" data-view="history"><span class="nav-icon">◫</span> History</button>
+          <button class="nav-item advanced-nav" data-view="loot"><span class="nav-icon">◆</span> 战利品库</button>
+          <button class="nav-item advanced-nav" data-view="sports"><span class="nav-icon">◉</span> 运动</button>
+          <button class="nav-item advanced-nav" data-view="habits"><span class="nav-icon">▤</span> 习惯打卡</button>
+          <button class="nav-item advanced-nav" data-view="savings"><span class="nav-icon">◒</span> 存钱账本</button>
+          <button class="nav-item advanced-nav" data-view="manager"><span class="nav-icon">▣</span> 数据管理</button>
+          <button class="nav-item advanced-nav" data-view="protocol"><span class="nav-icon">◇</span> Protocol</button>
         </nav>
 
         <div class="sidebar-bottom">
@@ -56,6 +58,7 @@
             <div class="mini-row"><span>LEVEL <b id="sideLevel">01</b></span><span id="sideXp">0 / 500 XP</span></div>
             <div class="xp-track"><span id="sideXpBar"></span></div>
           </div>
+          <button class="nav-item detail-toggle" id="advancedModeToggle"><span class="nav-icon">＋</span> 展开详细系统</button>
           <button class="nav-item" id="settingsBtn"><span class="nav-icon">⚙</span> Settings</button>
           <div class="local-pill"><span></span> DATA STORED LOCALLY</div>
         </div>
@@ -77,7 +80,24 @@
           </div>
         </header>
 
-        <section id="commandView" class="view active-view">
+        <section id="lifeView" class="view active-view">
+          <section class="life-hero panel">
+            <div><span>LIFE OS · LITE</span><h2>今天不用完美，<b>只要不要失联。</b></h2><p>留下三个信号就够了。漏过的日子不会追债，回来本身就是进展。</p></div>
+            <div class="life-mode-switch" id="lifeModeSwitch"><button data-life-mode="normal">普通日</button><button data-life-mode="travel">旅行中</button><button data-life-mode="recovery">恢复日</button></div>
+          </section>
+          <section class="return-card panel" id="lifeReturnCard" hidden><div><span>WELCOME BACK</span><h3 id="lifeReturnTitle">你回来了，这就够了。</h3><p id="lifeReturnCopy">过去不用补完。从今天重新接上就好。</p></div><button class="primary-btn" id="lifeReturnBtn">从今天继续</button></section>
+          <form class="life-checkin" id="lifeCheckinForm">
+            <article class="life-signal panel money"><span>01 · MONEY</span><h3>今天大概花了多少？</h3><p>大概也可以；以后想细分再去详细账本。</p><div class="life-money-input"><b>RM</b><input id="lifeSpendInput" type="number" min="0" step="0.01" placeholder="0.00" /></div><select id="lifeSpendIntent"><option value="planned">计划内／必要</option><option value="joy">计划内享受</option><option value="unplanned">计划外／后悔</option><option value="unknown">还不确定</option></select><small id="lifeSpendSource"></small></article>
+            <article class="life-signal panel body"><span>02 · BODY</span><h3>身体今天动了吗？</h3><p>旅行走路、攀岩、拉伸都算，不绑死健身房。</p><div class="life-choice-grid"><label><input type="radio" name="lifeMovement" value="none" checked><span>还没有</span></label><label><input type="radio" name="lifeMovement" value="minimum"><span>至少 10 分钟</span></label><label><input type="radio" name="lifeMovement" value="full"><span>完整训练</span></label></div></article>
+            <article class="life-signal panel forward"><span>03 · FORWARD</span><h3>今天最重要的一步</h3><p>不是列十件任务，只留下真正推进生活的一件。</p><input id="lifeFocusInput" type="text" maxlength="120" placeholder="例如：投一份认真修改过的申请" /><label class="life-done"><input id="lifeFocusDoneInput" type="checkbox"><span>这一步已经完成</span></label></article>
+            <div class="life-close panel"><div><span id="lifeCloseStatus">今天还没留下记录</span><strong id="lifeCloseHint">30 秒内完成，不需要写得漂亮。</strong></div><button class="primary-btn" type="submit">保存今天 · 保持连接</button></div>
+          </form>
+          <section class="life-week panel"><div class="life-week-head"><div><span>THIS WEEK · 不是连续纪录</span><h3>本周连接率</h3></div><strong id="lifeWeekScore">0 / 7</strong></div><div class="life-week-days" id="lifeWeekDays"></div><div class="life-week-metrics"><div><span>身体有动</span><b id="lifeMovementDays">0 天</b></div><div><span>关键一步完成</span><b id="lifeFocusDays">0 天</b></div><div><span>计划外消费</span><b id="lifeUnplannedDays">0 天</b></div><div><span>失联后回归</span><b id="lifeReturnMetric">今天也能回来</b></div></div></section>
+          <section class="travel-budget panel" id="lifeTravelPanel" hidden><div><span>TRAVEL MODE</span><h3 id="lifeTravelTitle">旅行预算</h3><p>旅行花钱不是输，只看有没有超出你预先接受的范围。</p></div><div class="travel-numbers"><div><span>预算</span><b id="lifeTravelBudget">RM 0.00</b></div><div><span>已记录</span><b id="lifeTravelSpent">RM 0.00</b></div><div><span>剩余</span><b id="lifeTravelRemaining">RM 0.00</b></div></div><button class="ghost-btn" id="lifeTravelSettingsBtn">设置旅行</button></section>
+          <section class="life-quick panel"><div><span>需要更多时才展开</span><h3>详细功能仍然完整保留</h3><p>账本、账户、战绩、运动技能、奖励和数据管理都没有删除。</p></div><div><button class="ghost-btn" data-life-open="savings">打开存钱账本</button><button class="ghost-btn" data-life-open="sports">记录详细运动</button><button class="ghost-btn" data-life-open="command">查看完整战绩</button><button class="ghost-btn" id="lifeShowAdvancedBtn">展开全部功能</button></div></section>
+        </section>
+
+        <section id="commandView" class="view">
           <section class="battle-intro">
             <div class="battle-copy">
               <span class="battle-code" id="battleCode">DAY 001 · ZERO SPEND WAR</span>
@@ -338,7 +358,7 @@
             <article class="panel"><span>危险值</span><strong id="habitDangerScore">0</strong></article>
           </div>
           <div class="sport-value panel">
-            <div><span>AI 惩罚箱状态</span><h3 id="habitPenaltyCopy">今天没有惩罚在追杀你。继续守。</h3></div>
+            <div><span>习惯保护状态</span><h3 id="habitPenaltyCopy">轻量系统已暂停新增惩罚。漏记不会欠债，回来就继续。</h3></div>
             <div class="sport-budget"><span>奖励系统</span><strong>统一奖励库存</strong><i><u style="width:100%"></u></i></div>
           </div>
           <section class="habit-safety panel">
@@ -358,7 +378,7 @@
           </section>
           <section class="interceptor panel">
             <div class="interceptor-head">
-              <div><span>AI PUNISHMENT BOX</span><h3>惩罚箱</h3><p>不是吓你，是让你真的讨厌连续摆烂。</p></div>
+              <div><span>HISTORICAL PENALTIES</span><h3>历史惩罚记录</h3><p>旧记录完整保留；轻量系统默认不再新增惩罚。</p></div>
             </div>
             <div class="habit-list" id="habitPenaltyList"></div>
           </section>
@@ -391,7 +411,7 @@
               <div id="habitReportList"></div>
             </div>
           </section>
-          <div class="sport-list-head"><h3>今日习惯战区</h3><span>完成就加成，连续没做就开惩罚箱。</span></div>
+          <div class="sport-list-head"><h3>今日习惯</h3><span>完成多少算多少；漏掉不会产生补记债务。</span></div>
           <div class="habit-list" id="habitList"></div>
           <div class="sport-list-head"><h3>你赢回来的习惯奖励</h3><span>这些不是系统送的，是你刷出来的。</span></div>
           <div class="loot-grid" id="habitPerkList"></div>
@@ -489,6 +509,8 @@
     <dialog id="recurringDialog"><form method="dialog" id="recurringForm"><button class="close-btn" type="button">×</button><span class="modal-kicker">每月固定现金流</span><h2>设置固定项目</h2><p>系统会在每个月指定日期自动写入账本，并增减你选择的账户。</p><input id="recurringEditId" type="hidden" /><label>类型</label><div class="type-options"><label><input type="radio" name="recurringType" value="income" checked><span>＋ 固定收入</span></label><label><input type="radio" name="recurringType" value="expense"><span>－ 固定花费</span></label></div><label>项目</label><input id="recurringTitleInput" type="text" maxlength="80" required placeholder="薪水、房租、Netflix、保险……" /><div class="form-columns"><div><label>每月金额</label><div class="amount-input"><span>RM</span><input id="recurringAmountInput" type="number" min="0.01" step="0.01" required /></div></div><div><label>每月几号</label><input id="recurringDayInput" type="number" min="1" max="31" required /></div></div><label>自动增／扣哪个账户</label><select id="recurringAccountInput"><option value="">未分配账户</option></select><label>开始日期</label><input id="recurringStartInput" type="date" required /><button class="primary-btn full-btn" type="submit" value="default">保存固定项目</button></form></dialog>
     <dialog id="savingsGoalDialog"><form method="dialog" id="savingsGoalForm"><button class="close-btn" type="button">×</button><span class="modal-kicker">储蓄目标</span><h2>设置下一座储蓄里程碑</h2><p>达到金额后解锁神秘箱，奖励到时由 AI 判断。</p><label>目标名称</label><input id="savingsGoalNameInput" type="text" maxlength="60" placeholder="紧急基金、第一万、旅行基金……" required /><label>目标净存款</label><div class="amount-input"><span>RM</span><input id="savingsGoalAmountInput" type="number" min="1" step="1" required /></div><button class="primary-btn full-btn" type="submit" value="default">锁定目标</button></form></dialog>
     <dialog id="savingsAiDialog"><div class="ai-shell"><button class="close-btn" type="button">×</button><div class="ai-head"><span>AI 存款教练</span><h2 id="savingsAiTitle">存款 AI 分析</h2><p id="savingsAiStatus">正在读取你的现金流……</p></div><div class="ai-analysis" id="savingsAiContent"></div></div></dialog>
+
+    <dialog id="lifeTravelDialog"><form method="dialog" id="lifeTravelForm"><button class="close-btn" type="button" aria-label="Close">×</button><span class="modal-kicker">TRAVEL MODE</span><h2>设置这次旅行</h2><p>旅行期间不再要求 RM0，也不会触发惩罚。只需要守住你接受的总预算。</p><label>旅行名称</label><input id="lifeTravelNameInput" type="text" maxlength="60" placeholder="KL 行程、回家、短途周末……" required /><div class="form-columns"><div><label>开始日期</label><input id="lifeTravelStartInput" type="date" required /></div><div><label>结束日期</label><input id="lifeTravelEndInput" type="date" required /></div></div><label>整趟可接受预算</label><div class="amount-input"><span>RM</span><input id="lifeTravelBudgetInput" type="number" min="0" step="0.01" required /></div><button class="primary-btn full-btn" type="submit">进入旅行模式</button><button class="reset-btn" id="lifeEndTravelBtn" type="button">结束旅行，回到普通模式</button></form></dialog>
 
     <dialog id="lootDialog">
       <form method="dialog" id="lootForm">
