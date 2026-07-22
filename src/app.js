@@ -19,6 +19,7 @@ import {
 
 const STORAGE_KEY = 'discipline-os-zero-v1';
 const SIDEBAR_STATE_KEY = 'discipline-os-sidebar-collapsed';
+const PUSH_DEVICE_KEY = 'discipline-os-push-device-v1';
 const DAY = 86400000;
 const PAGE_SIZE = 8;
 const SYNC_DEBOUNCE_MS = 500;
@@ -68,6 +69,12 @@ const defaultData = {
     penaltiesPaused: true,
     advancedVisible: false,
     travel: null,
+    reminders: {
+      enabled: false,
+      primaryHour: 21,
+      fallbackHour: null,
+      timezone: 'Asia/Kuala_Lumpur',
+    },
   },
   settings: { ...defaultSettings },
 };
@@ -193,6 +200,8 @@ let savingsPage = 1;
 let savingsPageSize = 10;
 let sportSessionsPage = 1;
 let secretDropPage = 1;
+let pushServerState = { checked: false, configured: false, publicKey: '', supportedHours: [8, 12, 18, 20, 21, 22] };
+let pushDeviceSubscribed = localStorage.getItem(PUSH_DEVICE_KEY) === '1';
 const SPORT_SESSIONS_PAGE_SIZE = 6;
 const SECRET_DROP_PAGE_SIZE = 8;
 
@@ -1025,6 +1034,12 @@ function normalizeData(raw = {}) {
       endDate: rawLife.travel.endDate || rawLife.travel.startDate || keyOf(),
       budget: Math.max(0, Number(rawLife.travel.budget || 0)),
     } : null,
+    reminders: {
+      enabled: Boolean(rawLife.reminders?.enabled),
+      primaryHour: [8, 12, 18, 20, 21, 22].includes(Number(rawLife.reminders?.primaryHour)) ? Number(rawLife.reminders.primaryHour) : 21,
+      fallbackHour: [8, 12, 18, 20, 21, 22].includes(Number(rawLife.reminders?.fallbackHour)) ? Number(rawLife.reminders.fallbackHour) : null,
+      timezone: rawLife.reminders?.timezone || 'Asia/Kuala_Lumpur',
+    },
   };
   return next;
 }
@@ -2149,8 +2164,8 @@ function renderLife() {
   document.querySelector(`input[name="lifeMovement"][value="${todayCheckin?.movement || 'none'}"]`).checked = true;
   document.querySelector('#lifeFocusInput').value = todayCheckin?.focus || '';
   document.querySelector('#lifeFocusDoneInput').checked = Boolean(todayCheckin?.focusDone);
-  document.querySelector('#lifeCloseStatus').textContent = todayCheckin ? '今天已经保持连接' : '今天还没留下记录';
-  document.querySelector('#lifeCloseHint').textContent = todayCheckin ? `最后保存：${new Date(todayCheckin.completedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} · 随时可以更新` : '30 秒内完成，不需要写得漂亮。';
+  document.querySelector('#lifeCloseStatus').textContent = todayCheckin?.minimal ? '今天已用最低版本接上' : todayCheckin ? '今天已经保持连接' : '今天还没留下记录';
+  document.querySelector('#lifeCloseHint').textContent = todayCheckin ? `最后保存：${new Date(todayCheckin.completedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} · ${todayCheckin.minimal ? '有力气时再补细节' : '随时可以更新'}` : '30 秒内完成，不需要写得漂亮。';
   const allDates = Object.keys(life.checkins || {}).filter((date) => date < today).sort();
   const lastDate = allDates.at(-1) || '';
   const gapDays = lastDate ? Math.max(0, Math.round((parseKey(today) - parseKey(lastDate)) / DAY) - 1) : 0;
@@ -2188,6 +2203,7 @@ function renderLife() {
     document.querySelector('#lifeTravelSpent').textContent = `RM ${money(travelSpent)}`;
     document.querySelector('#lifeTravelRemaining').textContent = `${remaining < 0 ? '− ' : ''}RM ${money(Math.abs(remaining))}`;
   }
+  renderLifeReminder();
 }
 
 function getLifeGapDays() {
@@ -2207,6 +2223,138 @@ function openLifeTravelDialog() {
   document.querySelector('#lifeTravelBudgetInput').value = travel?.budget || '';
   document.querySelector('#lifeEndTravelBtn').hidden = data.life?.mode !== 'travel';
   document.querySelector('#lifeTravelDialog').showModal();
+}
+
+function isStandalonePWA() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function notificationSupport() {
+  return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+}
+
+function renderLifeReminder() {
+  const card = document.querySelector('#lifeReminderCard');
+  if (!card) return;
+  const reminders = data.life?.reminders || defaultData.life.reminders;
+  const permission = 'Notification' in window ? Notification.permission : 'unsupported';
+  const enabled = reminders.enabled && pushDeviceSubscribed && permission === 'granted';
+  card.classList.toggle('ready', enabled);
+  document.querySelector('#lifeReminderTitle').textContent = enabled
+    ? `智能提醒已开启 · ${String(reminders.primaryHour).padStart(2, '0')}:00 左右`
+    : '让系统在你忘记时找你';
+  document.querySelector('#lifeReminderCopy').textContent = enabled
+    ? `${reminders.fallbackHour ? `若仍未记录，${String(reminders.fallbackHour).padStart(2, '0')}:00 再提醒一次。` : '每天最多提醒一次。'} 完成记录后自动安静。`
+    : permission === 'denied'
+      ? '通知曾被拒绝；需要在 iPhone 设置里重新允许。'
+      : '只在今天还没记录时提醒；完成后自动安静。';
+  document.querySelector('#lifeReminderSettingsBtn').textContent = enabled ? '管理提醒' : '设置提醒';
+}
+
+async function loadPushServerState() {
+  try {
+    const response = await fetch('/api/push');
+    if (!response.ok) throw new Error('PUSH_CONFIG_UNAVAILABLE');
+    pushServerState = { ...pushServerState, ...(await response.json()), checked: true };
+  } catch {
+    pushServerState = { ...pushServerState, checked: true, configured: false };
+  }
+  return pushServerState;
+}
+
+function renderReminderReadiness() {
+  const box = document.querySelector('#lifeReminderReadiness');
+  const help = document.querySelector('#lifeReminderHelp');
+  if (!box) return;
+  box.className = 'notification-readiness';
+  if (!notificationSupport()) {
+    box.classList.add('warn');
+    box.textContent = '这台装置暂不支持 Web Push。iPhone 需要 iOS 16.4 或更新版本，并从主屏幕打开这个 App。';
+    return;
+  }
+  if (!isStandalonePWA() && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    box.classList.add('warn');
+    box.textContent = '请先用 Safari「分享 → 加入主屏幕」，再从主屏幕图标打开；iPhone 只有这样才能开启通知。';
+    return;
+  }
+  if (!cloud.authenticated) {
+    box.classList.add('warn');
+    box.textContent = '先登入 Discipline OS 帐号，通知才可以安全绑定到这台手机。';
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    box.classList.add('warn');
+    box.textContent = '通知权限被关闭。请到 iPhone「设置 → 通知 → Discipline OS」重新允许。';
+    return;
+  }
+  if (pushServerState.checked && !pushServerState.configured) {
+    box.classList.add('warn');
+    box.textContent = '手机端已经准备好；云端推送服务还在完成安全配置。';
+    return;
+  }
+  box.classList.add('good');
+  box.textContent = Notification.permission === 'granted'
+    ? '✓ 这台手机已经允许通知。保存后，只在你没记录时提醒。'
+    : '✓ 装置支持通知。按「保存并开启通知」后，iPhone 会询问一次权限。';
+  if (help) help.textContent = '建议先用每天一次；连续一周仍常忘记，再开启第二次。';
+}
+
+async function openLifeReminderDialog() {
+  const reminders = data.life?.reminders || defaultData.life.reminders;
+  document.querySelector('#lifeReminderEnabledInput').checked = reminders.enabled;
+  document.querySelector('#lifeReminderPrimaryInput').value = String(reminders.primaryHour || 21);
+  document.querySelector('#lifeReminderFallbackInput').value = reminders.fallbackHour ? String(reminders.fallbackHour) : '';
+  document.querySelector('#lifeReminderDialog').showModal();
+  renderReminderReadiness();
+  if (notificationSupport()) {
+    const registration = await navigator.serviceWorker.ready;
+    pushDeviceSubscribed = Boolean(await registration.pushManager.getSubscription());
+    localStorage.setItem(PUSH_DEVICE_KEY, pushDeviceSubscribed ? '1' : '0');
+  }
+  await loadPushServerState();
+  renderReminderReadiness();
+}
+
+function base64UrlToUint8Array(value) {
+  const padding = '='.repeat((4 - value.length % 4) % 4);
+  const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
+  return Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
+}
+
+async function syncPushSubscription({ test = false } = {}) {
+  const reminders = data.life.reminders;
+  if (!notificationSupport()) throw new Error('这台装置不支持 Web Push。');
+  if (!pushServerState.checked) await loadPushServerState();
+  if (!pushServerState.configured || !pushServerState.publicKey) throw new Error('云端通知服务尚未完成配置。');
+  const { session } = await getSupabaseSession();
+  if (!session?.access_token) throw new Error('请先登入帐号，再绑定手机通知。');
+  if (reminders.enabled && Notification.permission !== 'granted') {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') throw new Error('你没有允许通知；可以稍后从设置再开启。');
+  }
+  const registration = await navigator.serviceWorker.ready;
+  let subscription = await registration.pushManager.getSubscription();
+  if (!subscription && reminders.enabled) {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: base64UrlToUint8Array(pushServerState.publicKey),
+    });
+  }
+  if (!subscription) return false;
+  const response = await fetch('/api/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({
+      action: test ? 'test' : 'subscribe',
+      subscription: subscription.toJSON(),
+      settings: reminders,
+    }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || '通知绑定失败。');
+  pushDeviceSubscribed = true;
+  localStorage.setItem(PUSH_DEVICE_KEY, '1');
+  return true;
 }
 
 function render() {
@@ -5754,11 +5902,35 @@ document.querySelector('#lifeCheckinForm')?.addEventListener('submit', (event) =
     movement: document.querySelector('input[name="lifeMovement"]:checked')?.value || 'none',
     focus: document.querySelector('#lifeFocusInput').value.trim(),
     focusDone: document.querySelector('#lifeFocusDoneInput').checked,
+    minimal: false,
     completedAt: new Date().toISOString(),
   };
+  if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
   saveData();
   render();
   showToast(isZh() ? '今天已经接上了' : 'Today is connected', isZh() ? '不用完美。三个信号已经安全保存。' : 'No perfection required. Your three signals are saved.');
+});
+
+document.querySelector('#lifeMinimumBtn')?.addEventListener('click', () => {
+  const today = keyOf();
+  const old = data.life.checkins?.[today];
+  checkpoint('今日最低签到');
+  data.life.checkins[today] = {
+    ...old,
+    date: today,
+    mode: data.life.mode,
+    spendAmount: old?.spendAmount || lifeRecordSpend(today) || 0,
+    spendIntent: old?.spendIntent || 'unknown',
+    movement: old?.movement || 'none',
+    focus: old?.focus || '',
+    focusDone: Boolean(old?.focusDone),
+    minimal: true,
+    completedAt: new Date().toISOString(),
+  };
+  if ('clearAppBadge' in navigator) navigator.clearAppBadge().catch(() => {});
+  saveData();
+  render();
+  showToast('最低签到完成', '今天不会再提醒。你没有失联，有力气时随时回来补细节。');
 });
 
 document.querySelector('#lifeModeSwitch')?.addEventListener('click', (event) => {
@@ -5791,6 +5963,59 @@ document.querySelector('#lifeReturnBtn')?.addEventListener('click', () => {
 });
 
 document.querySelector('#lifeTravelSettingsBtn')?.addEventListener('click', openLifeTravelDialog);
+document.querySelector('#lifeReminderSettingsBtn')?.addEventListener('click', openLifeReminderDialog);
+
+document.querySelector('#lifeReminderForm')?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const enabled = document.querySelector('#lifeReminderEnabledInput').checked;
+  const primaryHour = Number(document.querySelector('#lifeReminderPrimaryInput').value || 21);
+  const fallbackValue = document.querySelector('#lifeReminderFallbackInput').value;
+  const fallbackHour = fallbackValue && Number(fallbackValue) !== primaryHour ? Number(fallbackValue) : null;
+  checkpoint('更新手机提醒');
+  data.life.reminders = {
+    ...data.life.reminders,
+    enabled,
+    primaryHour,
+    fallbackHour,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kuala_Lumpur',
+  };
+  try {
+    if (enabled || pushDeviceSubscribed) await syncPushSubscription();
+    saveData();
+    render();
+    document.querySelector('#lifeReminderDialog').close();
+    showToast(enabled ? '智能提醒已开启' : '智能提醒已关闭', enabled ? `今天没记录时，会在 ${String(primaryHour).padStart(2, '0')}:00 左右提醒你。` : '这台手机不会再收到每日记录提醒。');
+  } catch (error) {
+    saveData();
+    render();
+    renderReminderReadiness();
+    document.querySelector('#lifeReminderHelp').textContent = String(error.message || error);
+    showToast('通知还没开启', String(error.message || error));
+  }
+});
+
+document.querySelector('#lifeReminderTestBtn')?.addEventListener('click', async () => {
+  const button = document.querySelector('#lifeReminderTestBtn');
+  button.disabled = true;
+  button.textContent = '发送中…';
+  try {
+    data.life.reminders.enabled = true;
+    data.life.reminders.primaryHour = Number(document.querySelector('#lifeReminderPrimaryInput').value || 21);
+    const fallbackValue = document.querySelector('#lifeReminderFallbackInput').value;
+    data.life.reminders.fallbackHour = fallbackValue ? Number(fallbackValue) : null;
+    await syncPushSubscription({ test: true });
+    saveData();
+    render();
+    showToast('测试通知已发送', '锁屏和通知中心应该会看到 Discipline OS。');
+  } catch (error) {
+    document.querySelector('#lifeReminderHelp').textContent = String(error.message || error);
+    showToast('测试失败', String(error.message || error));
+  } finally {
+    button.disabled = false;
+    button.textContent = '发送测试通知';
+    renderReminderReadiness();
+  }
+});
 
 document.querySelector('#lifeTravelForm')?.addEventListener('submit', (event) => {
   event.preventDefault();

@@ -1,8 +1,8 @@
 {
-  "name": "Discipline OS Zero",
+  "name": "Discipline OS Life",
   "short_name": "Discipline OS",
-  "description": "Eric 的 No Spend 挑战、战利品库、运动成长与同步战绩系统。",
-  "start_url": "/",
+  "description": "不会因为旅行、忙碌或漏记而失联的个人生活系统。",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "background_color": "#090a09",
