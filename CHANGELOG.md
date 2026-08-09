@@ -6,6 +6,7 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ### Fixed
 
+- Deleting an automatically generated recurring ledger entry now records that monthly occurrence as intentionally skipped, preventing it from being recreated immediately while preserving future months.
 - Prevented successful empty Supabase REST responses from being parsed as JSON, which previously surfaced as `Unexpected end of JSON input` while saving or testing a phone notification subscription.
 
 ### Added

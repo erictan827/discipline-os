@@ -50,6 +50,7 @@ const defaultData = {
   savingsTransfers: [],
   savingsBattleSync: {},
   recurringSavings: [],
+  recurringSavingsSkips: [],
   savingsGoal: null,
   savingsAnalysis: null,
   habits: [],
@@ -446,13 +447,23 @@ function setBattleSyncStatus(transactionId, status) {
   showToast(status === 'approved' ? '已同步到存钱账本' : status === 'declined' ? '已放进拒绝清单' : '已放回待同步', status === 'approved' ? `${source.transaction.reason} · RM ${money(source.transaction.amount)}` : '之后随时可以重新批准。');
 }
 
+function recurringSavingsSignature(item) {
+  return [String(item.title || '').trim().toLowerCase(), item.type, Number(item.amount || 0).toFixed(2), Number(item.day || 1)].join('|');
+}
+
+function recurringOccurrenceKey(entry) {
+  if (entry?.recurringKey) return entry.recurringKey;
+  const recurring = (data.recurringSavings || []).find((item) => item.id === entry?.recurringId);
+  const month = String(entry?.date || '').slice(0, 7);
+  return recurring && month ? `${recurringSavingsSignature(recurring)}|${month}` : '';
+}
+
 function materializeRecurringSavings() {
   let changed = false;
   const today = new Date();
-  const recurringSignature = (item) => [String(item.title || '').trim().toLowerCase(), item.type, Number(item.amount || 0).toFixed(2), Number(item.day || 1)].join('|');
   const recurringBySignature = new Map();
   data.recurringSavings = (data.recurringSavings || []).filter((item) => {
-    const signature = recurringSignature(item);
+    const signature = recurringSavingsSignature(item);
     if (recurringBySignature.has(signature)) { changed = true; return false; }
     recurringBySignature.set(signature, item); return true;
   });
@@ -460,7 +471,7 @@ function materializeRecurringSavings() {
   data.savingsEntries = (data.savingsEntries || []).filter((entry) => {
     const recurring = (data.recurringSavings || []).find((item) => item.id === entry.recurringId || (String(entry.note || '').includes('固定项目') && item.title.trim().toLowerCase() === String(entry.title || '').trim().toLowerCase() && Number(item.amount) === Number(entry.amount) && item.type === entry.type));
     if (!recurring) return true;
-    const key = `${recurringSignature(recurring)}|${String(entry.date || '').slice(0, 7)}`;
+    const key = `${recurringSavingsSignature(recurring)}|${String(entry.date || '').slice(0, 7)}`;
     entry.recurringId = recurring.id; entry.recurringKey = key;
     if (seenRecurring.has(key)) { changed = true; return false; }
     seenRecurring.add(key); return true;
@@ -472,8 +483,9 @@ function materializeRecurringSavings() {
     while (cursor <= last) {
       const y = cursor.getFullYear(); const m = cursor.getMonth();
       const date = new Date(y, m, Math.min(item.day, new Date(y, m + 1, 0).getDate()));
-      const recurringKey = `${recurringSignature(item)}|${y}-${String(m + 1).padStart(2, '0')}`;
-      if (date <= today && !(data.savingsEntries || []).some((entry) => entry.recurringKey === recurringKey)) {
+      const recurringKey = `${recurringSavingsSignature(item)}|${y}-${String(m + 1).padStart(2, '0')}`;
+      const manuallySkipped = (data.recurringSavingsSkips || []).includes(recurringKey);
+      if (date <= today && !manuallySkipped && !(data.savingsEntries || []).some((entry) => entry.recurringKey === recurringKey)) {
         const entry = { id: crypto.randomUUID(), date: keyOf(date), type: item.type, title: item.title, amount: item.amount, note: '每月固定项目 · 自动记入', recurringKey, recurringId: item.id, accountId: item.accountId || '', createdAt: new Date().toISOString(), aiReview: null };
         data.savingsEntries.push(entry);
         adjustAccountForEntry(entry, 1);
@@ -817,6 +829,7 @@ function normalizeData(raw = {}) {
     savingsTransfers: Array.isArray(raw.savingsTransfers) ? raw.savingsTransfers : [],
     savingsBattleSync: raw.savingsBattleSync && typeof raw.savingsBattleSync === 'object' ? raw.savingsBattleSync : {},
     recurringSavings: Array.isArray(raw.recurringSavings) ? raw.recurringSavings : [],
+    recurringSavingsSkips: Array.isArray(raw.recurringSavingsSkips) ? [...new Set(raw.recurringSavingsSkips.filter((key) => typeof key === 'string' && key))] : [],
     habits: Array.isArray(raw.habits) ? raw.habits : [],
     habitDrops: Array.isArray(raw.habitDrops) ? raw.habitDrops : [],
     habitPerks: Array.isArray(raw.habitPerks) ? raw.habitPerks : [],
@@ -6973,9 +6986,12 @@ document.querySelector('#savingsView')?.addEventListener('click', (event) => {
     checkpoint('删除存钱账本');
     const removed = (data.savingsEntries || []).find((item) => item.id === remove.dataset.deleteSaving);
     if (removed) adjustAccountForEntry(removed, -1);
+    const skippedRecurringKey = recurringOccurrenceKey(removed);
+    if (skippedRecurringKey) data.recurringSavingsSkips = [...new Set([...(data.recurringSavingsSkips || []), skippedRecurringKey])];
     data.savingsEntries = (data.savingsEntries || []).filter((item) => item.id !== remove.dataset.deleteSaving);
     if (removed?.sourceTransactionId) delete data.savingsBattleSync[removed.sourceTransactionId];
     saveData(); render();
+    showToast('账本记录已删除', skippedRecurringKey ? '这次固定扣款不会被系统自动补回来；下个月仍会正常生成。' : '账户余额与账本统计已经同步还原。');
   }
   if (editRecurring) openRecurringForm(data.recurringSavings.find((x) => x.id === editRecurring.dataset.editRecurring));
   if (toggleRecurring) { const item = data.recurringSavings.find((x) => x.id === toggleRecurring.dataset.toggleRecurring); if (item) { checkpoint('切换固定项目'); item.active = !item.active; saveData(); render(); } }
