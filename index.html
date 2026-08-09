@@ -309,7 +309,21 @@
           <section class="savings-filter panel"><div class="savings-filter-head"><div><span>VIEW RANGE</span><h3 id="savingsRangeLabel">本月</h3></div><div class="savings-modes"><button data-savings-mode="day">今天</button><button class="active" data-savings-mode="month">月</button><button data-savings-mode="year">年</button><button data-savings-mode="range">区间</button><button data-savings-mode="all">全部</button></div></div><div class="savings-date-controls"><input id="savingsStartInput" type="date" /><span>至</span><input id="savingsEndInput" type="date" /></div></section>
           <div class="savings-summary"><article class="panel income"><span>范围收入</span><strong id="savingsIncome">RM 0.00</strong></article><article class="panel expense"><span>范围花费</span><strong id="savingsExpense">RM 0.00</strong></article><article class="panel net"><span>范围净存</span><strong id="savingsNet">RM 0.00</strong></article><article class="panel"><span>记录笔数</span><strong id="savingsCount">0</strong></article></div>
           <section class="savings-ledger panel"><div class="savings-ledger-toolbar"><label><span>SEARCH LEDGER</span><input id="savingsSearchInput" type="search" placeholder="搜日期、项目、账户、金额、战绩同步、订阅……" /></label><label><span>每页显示</span><select id="savingsPageSizeInput"><option value="10">10 笔</option><option value="50">50 笔</option><option value="100">100 笔</option></select></label><strong id="savingsSearchCount">0 笔记录</strong></div><div class="savings-list-head"><span>日期</span><span>项目</span><span>类型</span><span>金额</span><span>操作</span></div><div id="savingsList"></div><div class="savings-pagination" id="savingsPagination"></div></section>
-          <section class="savings-recurring panel"><div class="savings-section-head"><div><span>每月固定现金流</span><h3>固定收支／订阅</h3><p>薪水、房租、保险、会员或固定存款；到日期会自动写进账本。</p></div><button class="primary-btn compact-btn" id="addRecurringBtn">＋ 设置固定项目</button></div><div id="recurringList"></div></section>
+          <section class="savings-recurring panel">
+            <div class="savings-section-head"><div><span>每月固定现金流</span><h3>固定收支／订阅</h3><p>薪水、房租、保险、会员或固定存款；到日期会自动写进账本。</p></div><button class="primary-btn compact-btn" id="addRecurringBtn">＋ 设置固定项目</button></div>
+            <div class="recurring-summary" aria-label="启用中的每月固定现金流统计">
+              <article class="expense"><span>每月固定会扣</span><strong id="recurringExpenseTotal">RM 0.00</strong><small>仅统计启用中的支出／订阅</small></article>
+              <article class="income"><span>每月固定会进</span><strong id="recurringIncomeTotal">RM 0.00</strong><small>仅统计启用中的固定收入</small></article>
+              <article class="net"><span>固定项目净影响</span><strong id="recurringNetTotal">RM 0.00</strong><small>固定收入减固定支出</small></article>
+              <article class="paused"><span>暂停不计入</span><strong id="recurringPausedCount">0 项</strong><small id="recurringPausedAmount">排除 RM 0.00</small></article>
+            </div>
+            <div class="recurring-toolbar">
+              <div class="recurring-status-filters" id="recurringStatusFilters" aria-label="筛选固定项目状态"><button class="active" data-recurring-status="all">全部</button><button data-recurring-status="active">启用中</button><button data-recurring-status="paused">已暂停</button></div>
+              <label><span>项目类型</span><select id="recurringTypeFilter"><option value="all">全部类型</option><option value="expense">固定支出／订阅</option><option value="income">固定收入</option></select></label>
+              <strong id="recurringFilterCount">0 / 0 项</strong>
+            </div>
+            <div id="recurringList"></div>
+          </section>
         </section>
 
         <section id="protocolView" class="view">

@@ -10,6 +10,8 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ### Added
 
+- Active recurring-expense, recurring-income, monthly net-impact, and excluded-paused totals in the fixed cash-flow and subscriptions section.
+- Independent status and type filters for recurring items, including all, active, paused, expense, and income views.
 - Opt-in Home Screen Web Push reminders for supported mobile and desktop PWAs.
 - Intelligent missing-check-in suppression so notifications stop immediately after any full or minimum daily check-in.
 - Lock-screen deep links to the Today screen, service-worker notification handling, and app-icon badges.
@@ -42,6 +44,7 @@ All notable changes to Discipline OS are documented here. The format follows [Ke
 
 ### Changed
 
+- Paused recurring items now use a distinct muted amber treatment and are explicitly excluded from every active monthly total.
 - Renamed and repositioned the PWA as Discipline OS Life in the install manifest.
 - Upgraded the service-worker cache and added push, notification-click, direct-open, and badge behavior.
 - Made Life OS Lite the default landing screen and moved the high-complexity feature navigation behind an explicit detail toggle.

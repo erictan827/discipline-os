@@ -198,6 +198,8 @@ let savingsMode = 'month';
 let savingsSearch = '';
 let savingsPage = 1;
 let savingsPageSize = 10;
+let recurringStatusFilter = 'all';
+let recurringTypeFilter = 'all';
 let sportSessionsPage = 1;
 let secretDropPage = 1;
 let pushServerState = { checked: false, configured: false, publicKey: '', supportedHours: [8, 12, 18, 20, 21, 22] };
@@ -570,7 +572,30 @@ function renderSavings() {
   document.querySelector('#savingsGoalBar').style.width = `${goalPct}%`;
   document.querySelector('#savingsRewardBox').innerHTML = !goal ? '<div class="saving-empty">先设置一个储蓄目标，系统才会生成神秘箱。</div>' : goal.reward ? `<article class="savings-mystery-box opened"><span>已开箱</span><div class="mystery-glyph">${escapeHtml(goal.reward.glyph || '✦')}</div><h4>${escapeHtml(goal.reward.title || 'AI 奖励')}</h4><p>${escapeHtml(goal.reward.reward || '')}</p><small>${escapeHtml(goal.reward.reason || '')}</small></article>` : `<article class="savings-mystery-box ${goalPct >= 100 ? 'unlocked' : ''}"><span>${goalPct >= 100 ? 'UNLOCKED' : 'LOCKED'}</span><div class="mystery-glyph">?</div><h4>${goalPct >= 100 ? '目标达成，等你领取' : '未知奖励'}</h4><p>${goalPct >= 100 ? 'AI 会在开箱这一刻，按你现在的财务状态决定奖励。' : `还差 RM ${money(Math.max(0, goal.amount - allNet))}`}</p><button data-open-savings-reward ${goalPct >= 100 && !goal.loading ? '' : 'disabled'}>${goal.loading ? 'AI 正在决定…' : '领取并开箱'}</button>${goal.error ? `<small>${escapeHtml(goal.error)}</small>` : ''}</article>`;
   const recurring = document.querySelector('#recurringList');
-  recurring.innerHTML = (data.recurringSavings || []).length ? data.recurringSavings.map((item) => { const account = (data.savingsAccounts || []).find((candidate) => candidate.id === item.accountId); return `<div class="recurring-row"><div><strong>${escapeHtml(item.title)}</strong><small>每月 ${item.day} 号 · ${item.active ? '自动记入' : '已暂停'} · ${account ? escapeHtml(account.name) : '未分配账户'}</small></div><span class="${item.type}">${item.type === 'income' ? '+' : '−'} RM ${money(item.amount)}</span><div><button data-toggle-recurring="${item.id}">${item.active ? '暂停' : '启用'}</button><button data-edit-recurring="${item.id}">修改</button><button data-delete-recurring="${item.id}">删除</button></div></div>`; }).join('') : '<div class="saving-empty">还没有固定项目。设置后可自动入账和预测下月存款。</div>';
+  const recurringItems = [...(data.recurringSavings || [])];
+  const activeRecurring = recurringItems.filter((item) => item.active);
+  const activeRecurringExpense = activeRecurring.filter((item) => item.type === 'expense').reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const activeRecurringIncome = activeRecurring.filter((item) => item.type === 'income').reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const pausedRecurring = recurringItems.filter((item) => !item.active);
+  const pausedRecurringAmount = pausedRecurring.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const recurringNet = activeRecurringIncome - activeRecurringExpense;
+  document.querySelector('#recurringExpenseTotal').textContent = `RM ${money(activeRecurringExpense)}`;
+  document.querySelector('#recurringIncomeTotal').textContent = `RM ${money(activeRecurringIncome)}`;
+  document.querySelector('#recurringNetTotal').textContent = `${recurringNet < 0 ? '− ' : recurringNet > 0 ? '+ ' : ''}RM ${money(Math.abs(recurringNet))}`;
+  document.querySelector('#recurringNetTotal').classList.toggle('negative', recurringNet < 0);
+  document.querySelector('#recurringPausedCount').textContent = `${pausedRecurring.length} 项`;
+  document.querySelector('#recurringPausedAmount').textContent = `排除 RM ${money(pausedRecurringAmount)}`;
+  const filteredRecurring = recurringItems
+    .filter((item) => recurringStatusFilter === 'all' || (recurringStatusFilter === 'active' ? item.active : !item.active))
+    .filter((item) => recurringTypeFilter === 'all' || item.type === recurringTypeFilter)
+    .sort((a, b) => Number(b.active) - Number(a.active) || Number(a.day) - Number(b.day) || a.title.localeCompare(b.title));
+  document.querySelectorAll('[data-recurring-status]').forEach((button) => button.classList.toggle('active', button.dataset.recurringStatus === recurringStatusFilter));
+  document.querySelector('#recurringTypeFilter').value = recurringTypeFilter;
+  document.querySelector('#recurringFilterCount').textContent = `${filteredRecurring.length} / ${recurringItems.length} 项`;
+  recurring.innerHTML = filteredRecurring.length ? filteredRecurring.map((item) => {
+    const account = (data.savingsAccounts || []).find((candidate) => candidate.id === item.accountId);
+    return `<div class="recurring-row ${item.active ? 'active' : 'paused'}"><div><div class="recurring-title-line"><strong>${escapeHtml(item.title)}</strong><span class="recurring-state ${item.active ? 'active' : 'paused'}">${item.active ? '启用中' : '已暂停 · 不计入'}</span></div><small>每月 ${item.day} 号 · ${item.active ? '自动记入' : '不会自动扣款'} · ${account ? escapeHtml(account.name) : '未分配账户'}</small></div><span class="${item.type}">${item.type === 'income' ? '+' : '−'} RM ${money(item.amount)}</span><div><button class="toggle" data-toggle-recurring="${item.id}">${item.active ? '暂停' : '重新启用'}</button><button data-edit-recurring="${item.id}">修改</button><button data-delete-recurring="${item.id}">删除</button></div></div>`;
+  }).join('') : `<div class="saving-empty">${recurringItems.length ? '这个筛选条件下没有固定项目。' : '还没有固定项目。设置后可自动入账和预测下月存款。'}</div>`;
   const query = savingsSearch.trim().toLowerCase();
   const searched = filtered.filter((item) => {
     const account = (data.savingsAccounts || []).find((candidate) => candidate.id === item.accountId);
@@ -6857,6 +6882,16 @@ function openRecurringForm(item = null) {
   document.querySelector('#recurringDialog').showModal();
 }
 document.querySelector('#addRecurringBtn')?.addEventListener('click', () => openRecurringForm());
+document.querySelector('#recurringStatusFilters')?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-recurring-status]');
+  if (!button) return;
+  recurringStatusFilter = button.dataset.recurringStatus;
+  renderSavings();
+});
+document.querySelector('#recurringTypeFilter')?.addEventListener('change', (event) => {
+  recurringTypeFilter = event.target.value;
+  renderSavings();
+});
 document.querySelector('#recurringForm')?.addEventListener('submit', (event) => {
   event.preventDefault(); if (!requireCloudAuth('设置固定现金流')) return;
   const id = document.querySelector('#recurringEditId').value; const old = (data.recurringSavings || []).find((x) => x.id === id);
